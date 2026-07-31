@@ -1,0 +1,61 @@
+{
+  "nav": {
+    "home": "Acasă",
+    "properties": "Proprietăți",
+    "localities": "Localități",
+    "blog": "Blog",
+    "services": "Servicii",
+    "about": "Despre",
+    "contact": "Contact",
+    "admin": "Admin"
+  },
+  "hero": {
+    "title": "Găsești casa ta de vis în Strășeni",
+    "subtitle": "Proprietăți verificate, prețuri accesibile, servicii profesionale",
+    "cta": "Explorează proprietăți"
+  },
+  "properties": {
+    "featured": "Proprietăți speciale",
+    "all": "Toate proprietățile",
+    "filter": "Filtrează",
+    "price": "Preț",
+    "area": "Suprafață",
+    "rooms": "Camere",
+    "type": "Tip",
+    "locality": "Localitate",
+    "views": "Vizualizări"
+  },
+  "property": {
+    "contact": "Contact direct",
+    "call": "📞 Apelează",
+    "inquiry": "Sunt interesat de această proprietate",
+    "name": "Nume",
+    "phone": "Telefon",
+    "email": "Email",
+    "message": "Mesaj",
+    "optional": "(opțional)",
+    "submit": "Solicită informații",
+    "success": "✓ Mulțumim! Vei fi contactat în curând.",
+    "sold": "VÂNDUT",
+    "back": "← Înapoi"
+  },
+  "blog": {
+    "articles": "Articole de blog",
+    "readMore": "Citește mai mult",
+    "author": "Autor",
+    "date": "Data",
+    "readingTime": "min de citit"
+  },
+  "localities": {
+    "distance": "~ km de Chișinău",
+    "advantages": "Avantaje",
+    "disadvantages": "Dezavantaje",
+    "indicativePrices": "Prețuri indicative"
+  },
+  "footer": {
+    "allRights": "© 2026 Imobiliare Strășeni. Toate drepturile rezervate.",
+    "contact": "Contact",
+    "privacy": "Confidențialitate",
+    "terms": "Condiții de utilizare"
+  }
+}

@@ -1,0 +1,29 @@
+# Allow search engines to crawl the site
+User-agent: *
+Allow: /
+Allow: /proprietati
+Allow: /localitati
+Allow: /blog
+Allow: /servicii
+Allow: /contact
+Allow: /despre
+
+# Disallow admin and add pages
+Disallow: /admin
+Disallow: /adauga-proprietate
+
+# Sitemap location
+Sitemap: https://imobiliarestrraseni.com/sitemap.xml
+
+# Crawl delay (in seconds)
+Crawl-delay: 1
+
+# Specific rules for Googlebot
+User-agent: Googlebot
+Allow: /
+Crawl-delay: 0
+
+# Specific rules for Bingbot
+User-agent: Bingbot
+Allow: /
+Crawl-delay: 1
