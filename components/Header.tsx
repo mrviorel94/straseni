@@ -66,10 +66,16 @@ export default function Header() {
           <div className="flex items-center gap-4">
             <LanguageSwitcher />
             <Link
+              href="/vinde-proprietate"
+              className="hidden sm:block px-6 py-2 border border-forest-green text-forest-green rounded-lg hover:bg-light-gray transition-colors font-medium text-sm"
+            >
+              Vinde
+            </Link>
+            <Link
               href="/adauga-proprietate"
               className="hidden sm:block bg-forest-green text-white px-6 py-2 rounded-lg hover:bg-forest-green-light transition-colors font-medium"
             >
-              Adaugă proprietatea
+              Caută
             </Link>
 
             {/* Mobile Menu Button */}
@@ -138,12 +144,20 @@ export default function Header() {
             >
               Contact
             </Link>
-            <Link
-              href="/adauga-proprietate"
-              className="block px-4 py-2 bg-forest-green text-white rounded-lg hover:bg-forest-green-light text-center font-medium"
-            >
-              Adaugă proprietatea
-            </Link>
+            <div className="flex gap-2">
+              <Link
+                href="/vinde-proprietate"
+                className="flex-1 px-4 py-2 border border-forest-green text-forest-green rounded-lg hover:bg-light-gray text-center font-medium"
+              >
+                Vinde
+              </Link>
+              <Link
+                href="/adauga-proprietate"
+                className="flex-1 px-4 py-2 bg-forest-green text-white rounded-lg hover:bg-forest-green-light text-center font-medium"
+              >
+                Caută
+              </Link>
+            </div>
           </nav>
         )}
       </div>

@@ -1,17 +1,31 @@
 'use client';
 
-import { Suspense, useState, useMemo } from 'react';
+import { Suspense, useState, useMemo, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import SearchBar from '@/components/SearchBar';
 import PropertyCard from '@/components/PropertyCard';
 import Breadcrumbs from '@/components/Breadcrumbs';
-import { mockProperties } from '@/lib/mockData';
 import { Property } from '@/lib/types';
 
 function ProprietatiContent() {
   const searchParams = useSearchParams();
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [sortBy, setSortBy] = useState<string>('newest');
+  const [properties, setProperties] = useState<Property[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch('/api/properties')
+      .then(r => r.json())
+      .then(data => {
+        setProperties(data || []);
+        setLoading(false);
+      })
+      .catch(err => {
+        console.error('Error fetching properties:', err);
+        setLoading(false);
+      });
+  }, []);
 
   const propertyType = searchParams.get('type');
   const locality = searchParams.get('locality');
@@ -19,7 +33,7 @@ function ProprietatiContent() {
   const maxPrice = searchParams.get('maxPrice');
 
   const filteredProperties = useMemo(() => {
-    let filtered = [...mockProperties];
+    let filtered = [...properties];
 
     if (propertyType) {
       filtered = filtered.filter((p) => p.type === propertyType);
@@ -69,10 +83,18 @@ function ProprietatiContent() {
 
       {/* Listings */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
-          <h2 className="text-2xl font-bold text-charcoal">
-            {filteredProperties.length} proprietăți găsite
-          </h2>
+        {loading ? (
+          <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+            {[...Array(6)].map((_, i) => (
+              <div key={i} className="h-64 bg-light-gray rounded-lg animate-pulse" />
+            ))}
+          </div>
+        ) : (
+          <>
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
+              <h2 className="text-2xl font-bold text-charcoal">
+                {filteredProperties.length} proprietăți găsite
+              </h2>
 
           <div className="flex gap-4 w-full sm:w-auto">
             <select
@@ -123,17 +145,19 @@ function ProprietatiContent() {
             ))}
           </div>
         ) : (
-          <div className="text-center py-16">
-            <p className="text-text-muted text-lg mb-4">
-              Nu am găsit proprietăți care să se potrivească cu criteriile tale.
-            </p>
-            <button
-              onClick={() => window.location.href = '/proprietati'}
-              className="text-forest-green font-medium hover:text-forest-green-light"
-            >
-              Resetează filtrele
-            </button>
-          </div>
+              <div className="text-center py-16">
+                <p className="text-text-muted text-lg mb-4">
+                  Nu am găsit proprietăți care să se potrivească cu criteriile tale.
+                </p>
+                <button
+                  onClick={() => window.location.href = '/proprietati'}
+                  className="text-forest-green font-medium hover:text-forest-green-light"
+                >
+                  Resetează filtrele
+                </button>
+              </div>
+            )}
+          </>
         )}
       </section>
     </>

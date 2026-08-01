@@ -26,6 +26,7 @@ export interface Property {
   contact?: Contact;
   slug?: string;
   sold?: boolean;
+  video_url?: string | null;
 }
 
 export interface Utility {
