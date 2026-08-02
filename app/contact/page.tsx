@@ -75,17 +75,9 @@ export default function ContactPage() {
 
               <div>
                 <h3 className="font-bold text-charcoal mb-3">Rețele sociale</h3>
-                <div className="flex gap-4">
-                  <a href="#" className="text-text-muted hover:text-forest-green transition-colors">
-                    Facebook
-                  </a>
-                  <a href="#" className="text-text-muted hover:text-forest-green transition-colors">
-                    Instagram
-                  </a>
-                  <a href="#" className="text-text-muted hover:text-forest-green transition-colors">
-                    WhatsApp
-                  </a>
-                </div>
+                <p className="text-text-muted text-sm">
+                  Disponibile pe cerere. Contactează-mă prin telefon sau email.
+                </p>
               </div>
             </div>
           </div>

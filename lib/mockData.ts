@@ -76,7 +76,7 @@ export const mockProperties: Property[] = [
   },
   {
     id: '3',
-    slug: 'teren-construcxii-cojusna',
+    slug: 'teren-constructii-cojusna',
     title: 'Teren pentru construcții în Cojușna',
     type: 'teren',
     locality: 'Cojușna',

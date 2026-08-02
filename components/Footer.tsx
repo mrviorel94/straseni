@@ -93,10 +93,10 @@ export default function Footer() {
               </li>
             </ul>
             <div className="text-xs text-gray-500 space-y-1">
-              <Link href="#" className="block hover:text-gray-400 transition-colors">
+              <Link href="/politica-confidentialitate" className="block hover:text-gray-400 transition-colors">
                 Politica de confidențialitate
               </Link>
-              <Link href="#" className="block hover:text-gray-400 transition-colors">
+              <Link href="/termeni-si-conditii" className="block hover:text-gray-400 transition-colors">
                 Termeni și condiții
               </Link>
             </div>
@@ -107,16 +107,8 @@ export default function Footer() {
           <p className="text-sm text-gray-400">
             © 2026 Imobiliare Strășeni. Toate drepturile rezervate.
           </p>
-          <div className="flex gap-4 mt-4 md:mt-0">
-            <a href="#" className="text-gray-400 hover:text-white transition-colors">
-              Facebook
-            </a>
-            <a href="#" className="text-gray-400 hover:text-white transition-colors">
-              Instagram
-            </a>
-            <a href="#" className="text-gray-400 hover:text-white transition-colors">
-              WhatsApp
-            </a>
+          <div className="flex gap-4 mt-4 md:mt-0 text-sm text-gray-400">
+            <span>Contactează-mă pentru informații complete</span>
           </div>
         </div>
       </div>

@@ -2,8 +2,8 @@ import Link from 'next/link';
 import Breadcrumbs from '@/components/Breadcrumbs';
 
 export const metadata = {
-  title: 'Despre noi - Imobiliare Strășeni',
-  description: 'Povestea și valorile Imobiliare Strășeni - ghidul imobiliar local pentru Strășeni și raion.',
+  title: 'Despre Viorel - Imobiliare Strășeni',
+  description: 'Viorel - consultant imobiliar local pentru Strășeni și raion. Transparență, profesionalism și cunoaștere locală.',
 };
 
 export default function DespPage() {
@@ -17,30 +17,29 @@ export default function DespPage() {
       {/* Hero */}
       <section className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center">
         <h1 className="text-4xl sm:text-5xl font-bold text-charcoal mb-4">
-          Despre Imobiliare Strășeni
+          Sunt Viorel - Consultant Imobiliar
         </h1>
         <p className="text-lg text-text-muted">
-          Un ghid imobiliar local, fiabil și profesional pentru Strășeni și raion
+          Te ajut să vinzi, să cumperi sau să promovezi o proprietate în Strășeni și raion
         </p>
       </section>
 
       {/* Story */}
       <section className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <h2 className="text-3xl font-bold text-charcoal mb-6">Povestea noastră</h2>
+        <h2 className="text-3xl font-bold text-charcoal mb-6">Cine sunt</h2>
         <div className="prose prose-lg max-w-none text-text-muted space-y-4">
           <p>
-            Imobiliare Strășeni s-a născut din necesitatea unui ghid local, transparent și
-            profesional pentru piața imobiliară din Strășeni și raion.
+            Sunt Viorel, consultant imobiliar din Strășeni. Am crescut aici și cunosc bine fiecare colț
+            al localității și al raionului.
           </p>
           <p>
-            Stiu că piața imobiliară poate fi confuză și pericol. Unii agenți nu sunt sinceri,
-            preturile nu sunt clare, iar informatiile nu sunt verificate. M-am decis sa creez o
-            platforma care schimba asta.
+            Știu că piața imobiliară poate fi confuză și periculoasă. Unii agenți nu sunt sinceri,
+            prețurile nu sunt clare, iar informațiile nu sunt verificate. M-am decis să lucrez diferit.
           </p>
           <p>
-            Imobiliare Strășeni este o platformă simplă, clară și utila pentru cumpărători și
-            vânzători. Fiecare proprietate este verificată, fiecare preț este justificat, și
-            fiecare sfat este sincer.
+            Ofer consultanță simplă, clară și utilă pentru cumpărători și vânzători. Fiecare proprietate
+            este verificată, fiecare preț este justificat, și fiecare sfat este sincer. Muncesc cu oameni,
+            nu cu cifre.
           </p>
         </div>
       </section>
@@ -50,14 +49,14 @@ export default function DespPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
             <div>
-              <h3 className="text-2xl font-bold text-charcoal mb-4">Misiunea noastră</h3>
+              <h3 className="text-2xl font-bold text-charcoal mb-4">Misiunea mea</h3>
               <p className="text-text-muted text-lg leading-relaxed">
-                Sa facem piața imobiliară din Strășeni mai transparentă, accesibilă și de încredere
-                pentru toți - cumpărători, vânzători și profesionisti.
+                Fac piața imobiliară din Strășeni mai transparentă, accesibilă și de încredere
+                pentru toți - cumpărători, vânzători și oameni care vor doar informații corecte.
               </p>
             </div>
             <div>
-              <h3 className="text-2xl font-bold text-charcoal mb-4">Valorile noastre</h3>
+              <h3 className="text-2xl font-bold text-charcoal mb-4">Valorile mele</h3>
               <ul className="space-y-3 text-text-muted">
                 <li className="flex items-start gap-3">
                   <span className="text-forest-green text-xl">✓</span>
@@ -89,37 +88,30 @@ export default function DespPage() {
         </div>
       </section>
 
-      {/* Team */}
+      {/* Profile Section */}
       <section className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <h2 className="text-3xl font-bold text-charcoal mb-12 text-center">Echipa noastră</h2>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
-          <div className="bg-light-gray p-6 rounded-lg text-center">
-            <div className="w-20 h-20 bg-forest-green rounded-full mx-auto mb-4"></div>
-            <h3 className="font-bold text-lg text-charcoal mb-2">Andrei Moldovanu</h3>
-            <p className="text-text-muted text-sm mb-2">Fondator & Consultant Imobiliar</p>
-            <p className="text-text-muted text-sm">
-              10+ ani experiență în piața imobiliară. Pasionat de a ajuta oamenii să găsească locuințe
-              potrivite.
-            </p>
+        <div className="bg-light-gray p-8 rounded-lg text-center">
+          <div className="w-32 h-32 bg-forest-green rounded-full mx-auto mb-6 flex items-center justify-center">
+            <span className="text-white text-5xl font-bold">V</span>
           </div>
-
-          <div className="bg-light-gray p-6 rounded-lg text-center">
-            <div className="w-20 h-20 bg-beige rounded-full mx-auto mb-4"></div>
-            <h3 className="font-bold text-lg text-charcoal mb-2">Elena Popescu</h3>
-            <p className="text-text-muted text-sm mb-2">Consultant Imobiliar</p>
-            <p className="text-text-muted text-sm">
-              Ajută cumpărători și vânzători în tot procesul. Specialistă în proprietăți din
-              Strășeni.
-            </p>
+          <h2 className="text-3xl font-bold text-charcoal mb-2">Viorel</h2>
+          <p className="text-forest-green font-medium mb-4">Consultant Imobiliar Local</p>
+          <p className="text-text-muted text-lg max-w-2xl mx-auto mb-6">
+            Specialist în proprietăți din Strășeni și raion. Cunosc piața, cunosc oamenii, și
+            cunosc cum să reunesc proprietăți cu oamenii potriviți.
+          </p>
+          <div className="space-y-3 text-text-muted">
+            <p><strong>Telefon:</strong> Disponibil pe cerere</p>
+            <p><strong>Email:</strong> Disponibil pe cerere</p>
+            <p><strong>Disponibilitate:</strong> Luni - Sâmbătă, 09:00 - 18:00</p>
           </div>
         </div>
       </section>
 
-      {/* Why Choose Us */}
+      {/* Why Choose Me */}
       <section className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <h2 className="text-3xl font-bold text-charcoal mb-12 text-center">
-          De ce să alegi Imobiliare Strășeni?
+          De ce să lucrez cu mine?
         </h2>
 
         <div className="space-y-6">
@@ -166,9 +158,9 @@ export default function DespPage() {
       {/* CTA */}
       <section className="bg-forest-green text-white py-16">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl font-bold mb-4">Gata să lucrez cu tine</h2>
+          <h2 className="text-3xl font-bold mb-4">Gata să muncim împreună?</h2>
           <p className="text-lg text-green-100 mb-8">
-            Deschid porțile pentru cumpărători și vânzători care doresc transparență și profesionalism.
+            Sunt aici pentru cumpărători și vânzători care doresc transparență, profesionalism și contact direct.
           </p>
           <Link
             href="/contact"

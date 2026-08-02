@@ -124,10 +124,10 @@ export default function Home() {
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
         <div className="text-center mb-12 animate-slide-up">
           <h2 className="text-3xl sm:text-4xl font-bold text-charcoal mb-4">
-            Serviciile noastre
+            Cum te pot ajuta
           </h2>
           <p className="text-text-muted text-lg max-w-2xl mx-auto">
-            Ajutăm cumpărători și vânzători cu consultanță profesională
+            Ofer consultanță profesională pentru cumpărători și vânzători
           </p>
         </div>
 
@@ -257,20 +257,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Admin Access Info */}
-      <section className="bg-forest-green text-white py-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center animate-fade-in">
-          <p className="text-lg mb-4">
-            🔐 Ești administrator? Accesează panelul de control
-          </p>
-          <Link
-            href="/admin"
-            className="inline-block bg-white text-forest-green px-8 py-3 rounded-lg hover:bg-light-gray transition-all transform hover:scale-105 font-medium"
-          >
-            Admin Panel
-          </Link>
-        </div>
-      </section>
     </>
   );
 }
