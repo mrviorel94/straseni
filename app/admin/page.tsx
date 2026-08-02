@@ -47,7 +47,12 @@ export default function AdminPage() {
 
   useEffect(() => {
     checkAuth();
-    if (user) fetchData();
+  }, []);
+
+  useEffect(() => {
+    if (user) {
+      fetchData();
+    }
   }, [user]);
 
   const checkAuth = async () => {
@@ -57,19 +62,41 @@ export default function AdminPage() {
   };
 
   const fetchData = async () => {
-    const [propertiesRes, leadsRes] = await Promise.all([
-      fetch('/api/properties'),
-      fetch('/api/leads'),
-    ]);
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000);
 
-    if (propertiesRes.ok) {
-      const props = await propertiesRes.json();
-      setProperties(props);
-    }
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
 
-    if (leadsRes.ok) {
-      const leadsData = await leadsRes.json();
-      setLeads(leadsData);
+      const headers: Record<string, string> = token ? { 'Authorization': `Bearer ${token}` } : {};
+
+      const [propertiesRes, leadsRes] = await Promise.all([
+        fetch('/api/properties', { signal: controller.signal, headers }),
+        fetch('/api/leads', { signal: controller.signal, headers }),
+      ]);
+
+      clearTimeout(timeoutId);
+
+      if (propertiesRes.ok) {
+        const props = await propertiesRes.json();
+        setProperties(Array.isArray(props) ? props : []);
+      } else {
+        console.error('Properties fetch failed:', propertiesRes.status);
+        setProperties([]);
+      }
+
+      if (leadsRes.ok) {
+        const leadsData = await leadsRes.json();
+        setLeads(Array.isArray(leadsData) ? leadsData : []);
+      } else {
+        console.error('Leads fetch failed:', leadsRes.status);
+        setLeads([]);
+      }
+    } catch (error) {
+      console.error('fetchData error:', error);
+      setProperties([]);
+      setLeads([]);
     }
   };
 
@@ -114,9 +141,21 @@ export default function AdminPage() {
 
     try {
       const slug = formData.title.toLowerCase().replace(/\s+/g, '-');
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
+
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000);
+
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+      };
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+
       const res = await fetch('/api/properties', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        signal: controller.signal,
+        headers,
         body: JSON.stringify({
           slug,
           title: formData.title,
@@ -138,14 +177,23 @@ export default function AdminPage() {
         }),
       });
 
+      clearTimeout(timeoutId);
+
       if (res.ok) {
         setFormData({ title: '', type: 'casa', locality: 'Strășeni', address: '', price: '', area: '', description: '', video_url: '', image: 'https://images.unsplash.com/photo-1570129477492-45c003d96918?w=800&h=600&fit=crop' });
         setShowAddForm(false);
-        fetchData();
+        await fetchData();
         alert('✓ Proprietate adăugată');
+      } else {
+        const error = await res.json().catch(() => ({ error: 'Unknown error' }));
+        alert(`Eroare: ${error.error || res.statusText}`);
       }
-    } catch (error) {
-      alert('Eroare la adăugare');
+    } catch (error: any) {
+      if (error.name === 'AbortError') {
+        alert('Timeout - serverul nu a răspuns. Încearcă din nou.');
+      } else {
+        alert('Eroare la adăugare: ' + String(error));
+      }
       console.error(error);
     }
   };
@@ -163,22 +211,41 @@ export default function AdminPage() {
     }
 
     try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
+
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000);
+
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+      };
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+
       const res = await fetch(`/api/properties/${editingId}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        signal: controller.signal,
+        headers,
         body: JSON.stringify(editFormData),
       });
+
+      clearTimeout(timeoutId);
 
       if (res.ok) {
         setEditingId(null);
         setEditFormData(null);
-        fetchData();
+        await fetchData();
         alert('✓ Proprietate actualizată');
+      } else {
+        const error = await res.json().catch(() => ({ error: 'Unknown error' }));
+        alert(`Eroare: ${error.error || res.statusText}`);
+      }
+    } catch (error: any) {
+      if (error.name === 'AbortError') {
+        alert('Timeout - serverul nu a răspuns');
       } else {
         alert('Eroare la actualizare');
       }
-    } catch (error) {
-      alert('Eroare la actualizare');
       console.error(error);
     }
   };
@@ -186,13 +253,35 @@ export default function AdminPage() {
   const handleDelete = async (propertyId: string) => {
     if (!confirm('Sigur dorești să ștergi această proprietate?')) return;
     try {
-      const res = await fetch(`/api/properties/${propertyId}`, { method: 'DELETE' });
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
+
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000);
+
+      const headers: Record<string, string> = {};
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+
+      const res = await fetch(`/api/properties/${propertyId}`, {
+        method: 'DELETE',
+        signal: controller.signal,
+        headers,
+      });
+
+      clearTimeout(timeoutId);
+
       if (res.ok) {
-        fetchData();
+        await fetchData();
         alert('✓ Proprietate ștearsă');
+      } else {
+        alert('Eroare la ștergere: ' + res.statusText);
       }
-    } catch (error) {
-      alert('Eroare la ștergere');
+    } catch (error: any) {
+      if (error.name === 'AbortError') {
+        alert('Timeout - serverul nu a răspuns');
+      } else {
+        alert('Eroare la ștergere');
+      }
       console.error(error);
     }
   };

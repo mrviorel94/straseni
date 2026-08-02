@@ -1,15 +1,28 @@
 import { supabase } from '@/lib/supabase';
 import { NextResponse } from 'next/server';
+import { cookies } from 'next/headers';
 
 export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const { data: session } = await supabase.auth.getSession();
-    if (!session.session?.user?.email) {
+    const authHeader = req.headers.get('Authorization');
+    let token = authHeader?.replace('Bearer ', '');
+
+    if (!token) {
+      const cookieStore = await cookies();
+      token = cookieStore.get('sb-token')?.value;
+    }
+
+    if (!token) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+    if (authError || !user?.email) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const adminEmails = (process.env.ADMIN_EMAILS || 'viorel.popa8@gmail.com').split(',').map(e => e.trim());
-    if (!adminEmails.includes(session.session.user.email)) {
+    if (!adminEmails.includes(user.email)) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
