@@ -12,7 +12,7 @@ export const mockProperties: Property[] = [
     priceLabel: '68.000 EUR',
     area: 220,
     rooms: 5,
-    landArea: 1200,
+    land_area: 1200,
     image: 'https://images.unsplash.com/photo-1570129477492-45c003d96918?w=800&h=600&fit=crop',
     images: [
       'https://images.unsplash.com/photo-1570129477492-45c003d96918?w=1000&h=750&fit=crop',
@@ -30,7 +30,7 @@ export const mockProperties: Property[] = [
     year: 1998,
     condition: 'Bună',
     heating: 'Șemineu și încălzire electrică',
-    roadAccess: 'Drum asfaltat',
+    road_access: 'Drum asfaltat',
     featured: true,
     badge: 'Recomandat',
     contact: {
@@ -84,7 +84,7 @@ export const mockProperties: Property[] = [
     price: 12000,
     priceLabel: '12.000 EUR',
     area: 1500,
-    landArea: 1500,
+    land_area: 1500,
     image: 'https://images.unsplash.com/photo-1500595046743-05271c48d7d7?w=800&h=600&fit=crop',
     images: [
       'https://images.unsplash.com/photo-1500595046743-05271c48d7d7?w=1000&h=750&fit=crop',
@@ -99,7 +99,7 @@ export const mockProperties: Property[] = [
       { name: 'Gaz', available: false },
     ],
     condition: 'Arabil',
-    roadAccess: 'Drum asfaltat',
+    road_access: 'Drum asfaltat',
     featured: true,
     badge: 'Promovat',
     contact: {
@@ -118,7 +118,7 @@ export const mockProperties: Property[] = [
     priceLabel: '52.000 EUR',
     area: 180,
     rooms: 4,
-    landArea: 800,
+    land_area: 800,
     image: 'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=800&h=600&fit=crop',
     images: [
       'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=1000&h=750&fit=crop',
@@ -151,7 +151,7 @@ export const mockProperties: Property[] = [
     price: 8000,
     priceLabel: '8.000 EUR',
     area: 5000,
-    landArea: 5000,
+    land_area: 5000,
     image: 'https://images.unsplash.com/photo-1574943320219-553eb213f72d?w=800&h=600&fit=crop',
     images: [
       'https://images.unsplash.com/photo-1574943320219-553eb213f72d?w=1000&h=750&fit=crop',
@@ -165,7 +165,7 @@ export const mockProperties: Property[] = [
       { name: 'Apă curentă', available: false },
     ],
     condition: 'Agricol',
-    roadAccess: 'Drum de pământ',
+    road_access: 'Drum de pământ',
     featured: false,
     contact: {
       name: 'Petru Rusnac',

@@ -11,7 +11,7 @@ export interface Property {
   priceLabel?: string;
   area: number;
   rooms?: number;
-  landArea?: number;
+  land_area?: number;
   image: string;
   images?: string[];
   description: string;
@@ -20,10 +20,12 @@ export interface Property {
   year?: number;
   condition?: string;
   heating?: string;
-  roadAccess?: string;
+  road_access?: string;
   featured?: boolean;
   badge?: 'Nou' | 'Recomandat' | 'Promovat';
   contact?: Contact;
+  contact_name?: string;
+  contact_phone?: string;
   slug?: string;
   sold?: boolean;
   video_url?: string | null;

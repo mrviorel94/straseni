@@ -107,11 +107,11 @@ export default function PropertyCard({ property }: PropertyCardProps) {
                 <span> camere</span>
               </div>
             )}
-            {property.landArea && (
+            {property.land_area && (
               <div>
                 <span className={`font-medium ${
                   property.sold ? 'text-gray-500' : 'text-charcoal'
-                }`}>{(property.landArea / 100).toFixed(0)}</span>
+                }`}>{(property.land_area / 100).toFixed(0)}</span>
                 <span> ari</span>
               </div>
             )}

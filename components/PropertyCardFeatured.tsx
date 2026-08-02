@@ -77,10 +77,10 @@ export default function PropertyCardFeatured({ property }: PropertyCardFeaturedP
                 <span className="font-medium text-charcoal">{property.rooms}</span>
               </div>
             )}
-            {property.landArea && (
+            {property.land_area && (
               <div className="flex justify-between text-sm">
                 <span className="text-text-muted">Teren</span>
-                <span className="font-medium text-charcoal">{(property.landArea / 100).toFixed(0)} ari</span>
+                <span className="font-medium text-charcoal">{(property.land_area / 100).toFixed(0)} ari</span>
               </div>
             )}
           </div>

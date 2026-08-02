@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabase';
 import { Property } from '@/lib/types';
 import Link from 'next/link';
 import type { User } from '@supabase/supabase-js';
+import { translations, type Language, getTranslation } from '@/lib/translations';
 
 type Lead = {
   id: string;
@@ -31,6 +32,16 @@ export default function AdminPage() {
   const [leads, setLeads] = useState<Lead[]>([]);
   const [showAddForm, setShowAddForm] = useState(false);
   const [tab, setTab] = useState<'properties' | 'leads'>('properties');
+  const [lang, setLang] = useState<Language>('ro');
+  const t = (key: keyof typeof translations.ro) => getTranslation(lang, key);
+
+  // Filters
+  const [filterType, setFilterType] = useState<string>('');
+  const [filterLocality, setFilterLocality] = useState<string>('');
+  const [filterPriceMin, setFilterPriceMin] = useState<string>('');
+  const [filterPriceMax, setFilterPriceMax] = useState<string>('');
+  const [showSold, setShowSold] = useState(false);
+
   const [formData, setFormData] = useState({
     title: '',
     type: 'casa' as const,
@@ -38,12 +49,26 @@ export default function AdminPage() {
     address: '',
     price: '',
     area: '',
+    rooms: '',
+    land_area: '',
+    year: '',
+    condition: '',
+    heating: '',
     description: '',
     video_url: '',
     image: 'https://images.unsplash.com/photo-1570129477492-45c003d96918?w=800&h=600&fit=crop',
   });
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editFormData, setEditFormData] = useState<Partial<Property> | null>(null);
+
+  const filteredProperties = properties.filter(prop => {
+    const matchType = !filterType || prop.type === filterType;
+    const matchLocality = !filterLocality || prop.locality === filterLocality;
+    const matchPrice = (!filterPriceMin || prop.price >= parseInt(filterPriceMin)) &&
+                       (!filterPriceMax || prop.price <= parseInt(filterPriceMax));
+    const matchSold = showSold || !prop.sold;
+    return matchType && matchLocality && matchPrice && matchSold;
+  });
 
   useEffect(() => {
     checkAuth();
@@ -105,7 +130,7 @@ export default function AdminPage() {
     try {
       const { data, error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) {
-        alert('Email sau parolă incorectă');
+        alert(t('invalidCredentials'));
         return;
       }
       setUser(data.user);
@@ -113,7 +138,7 @@ export default function AdminPage() {
       setPassword('');
       fetchData();
     } catch (err) {
-      alert('Eroare la autentificare');
+      alert(t('authError'));
     }
   };
 
@@ -135,7 +160,7 @@ export default function AdminPage() {
   const handleAddProperty = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.title || !formData.address || !formData.price || !formData.area) {
-      alert('Completează toate câmpurile obligatorii');
+      alert(t('fillRequired'));
       return;
     }
 
@@ -164,6 +189,11 @@ export default function AdminPage() {
           address: formData.address,
           price: parseInt(formData.price),
           area: parseInt(formData.area),
+          rooms: formData.rooms ? parseInt(formData.rooms) : null,
+          land_area: formData.land_area ? parseInt(formData.land_area) : null,
+          year: formData.year || null,
+          condition: formData.condition || null,
+          heating: formData.heating || null,
           image: formData.image,
           images: [formData.image],
           description: formData.description,
@@ -180,19 +210,19 @@ export default function AdminPage() {
       clearTimeout(timeoutId);
 
       if (res.ok) {
-        setFormData({ title: '', type: 'casa', locality: 'Strășeni', address: '', price: '', area: '', description: '', video_url: '', image: 'https://images.unsplash.com/photo-1570129477492-45c003d96918?w=800&h=600&fit=crop' });
+        setFormData({ title: '', type: 'casa', locality: 'Strășeni', address: '', price: '', area: '', rooms: '', land_area: '', year: '', condition: '', heating: '', description: '', video_url: '', image: 'https://images.unsplash.com/photo-1570129477492-45c003d96918?w=800&h=600&fit=crop' });
         setShowAddForm(false);
         await fetchData();
-        alert('✓ Proprietate adăugată');
+        alert(t('propertyAdded'));
       } else {
         const error = await res.json().catch(() => ({ error: 'Unknown error' }));
-        alert(`Eroare: ${error.error || res.statusText}`);
+        alert(`${t('error')}: ${error.error || res.statusText}`);
       }
     } catch (error: any) {
       if (error.name === 'AbortError') {
-        alert('Timeout - serverul nu a răspuns. Încearcă din nou.');
+        alert(t('timeout'));
       } else {
-        alert('Eroare la adăugare: ' + String(error));
+        alert(`${t('error')}: ` + String(error));
       }
       console.error(error);
     }
@@ -206,7 +236,7 @@ export default function AdminPage() {
   const handleEditSave = async () => {
     if (!editFormData || !editingId) return;
     if (!editFormData.title || !editFormData.address || !editFormData.price || !editFormData.area) {
-      alert('Completează toate câmpurile obligatorii');
+      alert(t('fillRequired'));
       return;
     }
 
@@ -235,23 +265,23 @@ export default function AdminPage() {
         setEditingId(null);
         setEditFormData(null);
         await fetchData();
-        alert('✓ Proprietate actualizată');
+        alert(t('propertyUpdated'));
       } else {
         const error = await res.json().catch(() => ({ error: 'Unknown error' }));
-        alert(`Eroare: ${error.error || res.statusText}`);
+        alert(`${t('error')}: ${error.error || res.statusText}`);
       }
     } catch (error: any) {
       if (error.name === 'AbortError') {
-        alert('Timeout - serverul nu a răspuns');
+        alert(t('timeout'));
       } else {
-        alert('Eroare la actualizare');
+        alert(`${t('error')}: ${t('error')}`);
       }
       console.error(error);
     }
   };
 
   const handleDelete = async (propertyId: string) => {
-    if (!confirm('Sigur dorești să ștergi această proprietate?')) return;
+    if (!confirm(t('deleteConfirm'))) return;
     try {
       const { data: { session } } = await supabase.auth.getSession();
       const token = session?.access_token;
@@ -272,15 +302,15 @@ export default function AdminPage() {
 
       if (res.ok) {
         await fetchData();
-        alert('✓ Proprietate ștearsă');
+        alert(t('propertyDeleted'));
       } else {
-        alert('Eroare la ștergere: ' + res.statusText);
+        alert(`${t('deleteError')}: ` + res.statusText);
       }
     } catch (error: any) {
       if (error.name === 'AbortError') {
-        alert('Timeout - serverul nu a răspuns');
+        alert(t('timeout'));
       } else {
-        alert('Eroare la ștergere');
+        alert(t('deleteError'));
       }
       console.error(error);
     }
@@ -336,10 +366,10 @@ export default function AdminPage() {
 
       if (res.ok) {
         fetchData();
-        alert('✓ Lead aprobat și proprietate adăugată');
+        alert(t('leadApproved'));
       }
     } catch (error) {
-      alert('Eroare la aprobare');
+      alert(t('leadError'));
       console.error(error);
     }
   };
@@ -354,10 +384,10 @@ export default function AdminPage() {
 
       if (res.ok) {
         fetchData();
-        alert('✓ Lead respins');
+        alert(t('leadRejected'));
       }
     } catch (error) {
-      alert('Eroare la respingere');
+      alert(`${t('error')}: ${t('leadError')}`);
       console.error(error);
     }
   };
@@ -380,17 +410,27 @@ export default function AdminPage() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-forest-green to-forest-green-light flex items-center justify-center p-4">
         <div className="bg-white rounded-lg shadow-xl p-6 sm:p-8 max-w-md w-full animate-fade-in">
-          <div className="text-center mb-8">
-            <div className="w-12 h-12 bg-forest-green rounded-lg flex items-center justify-center mx-auto mb-4">
-              <span className="text-white font-bold text-lg">I</span>
+          <div className="flex justify-between items-start mb-8">
+            <div>
+              <div className="w-12 h-12 bg-forest-green rounded-lg flex items-center justify-center mb-4">
+                <span className="text-white font-bold text-lg">I</span>
+              </div>
+              <h1 className="text-3xl font-bold text-charcoal mb-2">{t('adminPanel')}</h1>
+              <p className="text-text-muted">{t('realty')}</p>
             </div>
-            <h1 className="text-3xl font-bold text-charcoal mb-2">Admin Panel</h1>
-            <p className="text-text-muted">Imobiliare Strășeni</p>
+            <select
+              value={lang}
+              onChange={(e) => setLang(e.target.value as Language)}
+              className="px-2 py-1 border border-light-gray rounded text-sm bg-white"
+            >
+              <option value="ro">🇷🇴 RO</option>
+              <option value="ru">🇷🇺 RU</option>
+            </select>
           </div>
 
           <form onSubmit={handleLogin} className="space-y-4 mb-6">
             <div>
-              <label className="block text-sm font-medium text-charcoal mb-2">Email</label>
+              <label className="block text-sm font-medium text-charcoal mb-2">{t('email')}</label>
               <input
                 type="email"
                 value={email}
@@ -401,12 +441,12 @@ export default function AdminPage() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-charcoal mb-2">Parolă</label>
+              <label className="block text-sm font-medium text-charcoal mb-2">{t('password')}</label>
               <input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="Parolă"
+                placeholder={t('password')}
                 className="w-full px-4 py-3 border-2 border-light-gray rounded-lg focus:outline-none focus:border-forest-green transition-colors text-base"
                 required
               />
@@ -416,12 +456,12 @@ export default function AdminPage() {
               type="submit"
               className="w-full bg-forest-green text-white px-6 py-3 rounded-lg hover:bg-forest-green-light active:scale-95 transition-all font-medium text-base"
             >
-              Intru în Admin
+              {t('loginButton')}
             </button>
           </form>
 
           <Link href="/" className="block text-center mt-6 text-forest-green hover:underline text-sm">
-            ← Înapoi la site
+            {t('back')}
           </Link>
         </div>
       </div>
@@ -434,14 +474,22 @@ export default function AdminPage() {
       <div className="bg-forest-green text-white shadow-md sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-            <h1 className="text-2xl font-bold">Admin Panel</h1>
+            <h1 className="text-2xl font-bold">{t('adminPanel')}</h1>
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 w-full sm:w-auto">
+              <select
+                value={lang}
+                onChange={(e) => setLang(e.target.value as Language)}
+                className="px-3 py-1 border border-white rounded text-sm bg-forest-green text-white cursor-pointer"
+              >
+                <option value="ro">🇷🇴 RO</option>
+                <option value="ru">🇷🇺 RU</option>
+              </select>
               <span className="text-sm opacity-90 truncate">{user?.email}</span>
               <button
                 onClick={handleLogout}
                 className="px-4 py-2 bg-white text-forest-green rounded-lg hover:bg-light-gray active:scale-95 transition-all font-medium text-sm w-full sm:w-auto"
               >
-                Delogare
+                {t('logout')}
               </button>
             </div>
           </div>
@@ -459,7 +507,7 @@ export default function AdminPage() {
                 : 'border-transparent text-text-muted hover:text-charcoal'
             }`}
           >
-            Proprietăți ({properties.length})
+            {t('properties')} ({properties.length})
           </button>
           <button
             onClick={() => setTab('leads')}
@@ -469,7 +517,7 @@ export default function AdminPage() {
                 : 'border-transparent text-text-muted hover:text-charcoal'
             }`}
           >
-            Leads ({leads.filter(l => l.status === 'pending').length})
+            {t('leads')} ({leads.filter(l => l.status === 'pending').length})
           </button>
         </div>
       </div>
@@ -480,51 +528,116 @@ export default function AdminPage() {
           <>
             <div className="flex flex-col sm:flex-row justify-between items-start gap-4 mb-6 sm:mb-8">
               <div className="flex-1">
-                <h2 className="text-2xl sm:text-3xl font-bold text-charcoal mb-2">Gestionare Proprietăți</h2>
-                <p className="text-sm sm:text-base text-text-muted">Total: {properties.length} proprietăți ({properties.filter(p => !p.sold).length} disponibile)</p>
+                <h2 className="text-2xl sm:text-3xl font-bold text-charcoal mb-2">{t('manageProperties')}</h2>
+                <p className="text-sm sm:text-base text-text-muted">{t('total')}: {properties.length} {t('total')} ({properties.filter(p => !p.sold).length} {t('available')})</p>
               </div>
               <button
                 onClick={() => setShowAddForm(!showAddForm)}
                 className="px-4 sm:px-6 py-2 sm:py-3 bg-forest-green text-white rounded-lg hover:bg-forest-green-light active:scale-95 transition-all font-medium text-sm sm:text-base w-full sm:w-auto"
               >
-                {showAddForm ? '✕ Anulează' : '+ Adaug proprietate'}
+                {showAddForm ? `✕ ${t('cancel')}` : `+ ${t('addProperty')}`}
               </button>
+            </div>
+
+            {/* Filters */}
+            <div className="bg-white rounded-lg shadow-md p-4 sm:p-6 mb-6 border border-light-gray">
+              <h3 className="font-bold text-charcoal mb-4">{t('filters')}</h3>
+              <div className="grid grid-cols-1 md:grid-cols-5 gap-3 sm:gap-4">
+                <select
+                  value={filterType}
+                  onChange={(e) => setFilterType(e.target.value)}
+                  className="px-3 sm:px-4 py-2 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-forest-green text-sm sm:text-base"
+                >
+                  <option value="">{t('filterByType')}</option>
+                  <option value="casa">{t('house')}</option>
+                  <option value="apartament">{t('apartment')}</option>
+                  <option value="teren">{t('land')}</option>
+                  <option value="comercial">{t('commercial')}</option>
+                </select>
+
+                <select
+                  value={filterLocality}
+                  onChange={(e) => setFilterLocality(e.target.value)}
+                  className="px-3 sm:px-4 py-2 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-forest-green text-sm sm:text-base"
+                >
+                  <option value="">{t('filterByLocation')}</option>
+                  <option value="Strășeni">Strășeni</option>
+                  <option value="Cojușna">Cojușna</option>
+                  <option value="Sireți">Sireți</option>
+                  <option value="Vatra">Vatra</option>
+                  <option value="Lozova">Lozova</option>
+                  <option value="Căpriana">Căpriana</option>
+                </select>
+
+                <input
+                  type="number"
+                  placeholder={`${t('filterByPrice')} MIN`}
+                  value={filterPriceMin}
+                  onChange={(e) => setFilterPriceMin(e.target.value)}
+                  className="px-3 sm:px-4 py-2 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-forest-green text-sm sm:text-base"
+                />
+
+                <input
+                  type="number"
+                  placeholder={`${t('filterByPrice')} MAX`}
+                  value={filterPriceMax}
+                  onChange={(e) => setFilterPriceMax(e.target.value)}
+                  className="px-3 sm:px-4 py-2 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-forest-green text-sm sm:text-base"
+                />
+
+                <button
+                  onClick={() => {
+                    setFilterType('');
+                    setFilterLocality('');
+                    setFilterPriceMin('');
+                    setFilterPriceMax('');
+                    setShowSold(false);
+                  }}
+                  className="px-3 sm:px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 font-medium text-sm sm:text-base transition-all"
+                >
+                  Reset
+                </button>
+              </div>
+              <div className="flex gap-4 mt-3">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={showSold}
+                    onChange={(e) => setShowSold(e.target.checked)}
+                    className="w-4 h-4"
+                  />
+                  <span className="text-sm sm:text-base">{t('showSold')}</span>
+                </label>
+              </div>
             </div>
 
         {/* Edit Property Modal */}
         {tab === 'properties' && editingId && editFormData && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-2 sm:p-4 z-50 animate-fade-in">
             <div className="bg-white rounded-lg shadow-lg p-4 sm:p-6 max-w-2xl w-full max-h-[95vh] sm:max-h-[90vh] overflow-y-auto">
-              <h3 className="text-lg sm:text-xl font-bold text-charcoal mb-4 sm:mb-6">Editare proprietate</h3>
+              <h3 className="text-lg sm:text-xl font-bold text-charcoal mb-4 sm:mb-6">{t('editProperty')}</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 mb-4 sm:mb-6">
                 <input
                   type="text"
-                  placeholder="Titlu"
+                  placeholder={t('title')}
                   value={editFormData.title}
                   onChange={(e) => setEditFormData({ ...editFormData, title: e.target.value })}
-                  className="px-3 sm:px-4 py-2 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-forest-green text-base"
+                  className="px-3 sm:px-4 py-2 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-forest-green text-base md:col-span-2"
                 />
                 <select
                   value={editFormData.type}
                   onChange={(e) => setEditFormData({ ...editFormData, type: e.target.value as any })}
-                  className="px-4 py-2 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-forest-green"
+                  className="px-4 py-2 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-forest-green text-sm sm:text-base"
                 >
-                  <option value="casa">Casă</option>
-                  <option value="apartament">Apartament</option>
-                  <option value="teren">Teren</option>
-                  <option value="comercial">Spațiu comercial</option>
+                  <option value="casa">{t('house')}</option>
+                  <option value="apartament">{t('apartment')}</option>
+                  <option value="teren">{t('land')}</option>
+                  <option value="comercial">{t('commercial')}</option>
                 </select>
-                <input
-                  type="text"
-                  placeholder="Adresă"
-                  value={editFormData.address}
-                  onChange={(e) => setEditFormData({ ...editFormData, address: e.target.value })}
-                  className="px-4 py-2 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-forest-green"
-                />
                 <select
                   value={editFormData.locality}
                   onChange={(e) => setEditFormData({ ...editFormData, locality: e.target.value })}
-                  className="px-4 py-2 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-forest-green"
+                  className="px-4 py-2 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-forest-green text-sm sm:text-base"
                 >
                   <option value="Strășeni">Strășeni</option>
                   <option value="Cojușna">Cojușna</option>
@@ -534,43 +647,89 @@ export default function AdminPage() {
                   <option value="Căpriana">Căpriana</option>
                 </select>
                 <input
-                  type="number"
-                  placeholder="Preț (EUR)"
-                  value={editFormData.price}
-                  onChange={(e) => setEditFormData({ ...editFormData, price: parseInt(e.target.value) })}
-                  className="px-4 py-2 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-forest-green"
+                  type="text"
+                  placeholder={t('address')}
+                  value={editFormData.address}
+                  onChange={(e) => setEditFormData({ ...editFormData, address: e.target.value })}
+                  className="px-4 py-2 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-forest-green md:col-span-2 text-sm sm:text-base"
                 />
                 <input
                   type="number"
-                  placeholder="Suprafață (mp)"
+                  placeholder={t('price')}
+                  value={editFormData.price}
+                  onChange={(e) => setEditFormData({ ...editFormData, price: parseInt(e.target.value) })}
+                  className="px-4 py-2 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-forest-green text-sm sm:text-base"
+                />
+                <input
+                  type="number"
+                  placeholder={t('area')}
                   value={editFormData.area}
                   onChange={(e) => setEditFormData({ ...editFormData, area: parseInt(e.target.value) })}
-                  className="px-4 py-2 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-forest-green"
+                  className="px-4 py-2 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-forest-green text-sm sm:text-base"
+                />
+                <input
+                  type="number"
+                  placeholder={t('rooms')}
+                  value={editFormData.rooms || ''}
+                  onChange={(e) => setEditFormData({ ...editFormData, rooms: e.target.value ? parseInt(e.target.value) : undefined })}
+                  className="px-4 py-2 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-forest-green text-sm sm:text-base"
+                />
+                <input
+                  type="number"
+                  placeholder={t('landArea')}
+                  value={editFormData.land_area || ''}
+                  onChange={(e) => setEditFormData({ ...editFormData, land_area: e.target.value ? parseInt(e.target.value) : undefined })}
+                  className="px-4 py-2 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-forest-green text-sm sm:text-base"
+                />
+                <input
+                  type="number"
+                  placeholder={t('year')}
+                  value={editFormData.year || ''}
+                  onChange={(e) => setEditFormData({ ...editFormData, year: e.target.value ? parseInt(e.target.value) : undefined })}
+                  className="px-4 py-2 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-forest-green text-sm sm:text-base"
+                />
+                <select
+                  value={editFormData.condition || ''}
+                  onChange={(e) => setEditFormData({ ...editFormData, condition: e.target.value || undefined })}
+                  className="px-4 py-2 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-forest-green text-sm sm:text-base"
+                >
+                  <option value="">{t('condition')}</option>
+                  <option value="Bună">Bună</option>
+                  <option value="Foarte bună">Foarte bună</option>
+                  <option value="Nouă">Nouă</option>
+                  <option value="De renovat">De renovat</option>
+                </select>
+                <input
+                  type="text"
+                  placeholder={t('heating')}
+                  value={editFormData.heating || ''}
+                  onChange={(e) => setEditFormData({ ...editFormData, heating: e.target.value || undefined })}
+                  className="px-4 py-2 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-forest-green text-sm sm:text-base"
                 />
                 <input
                   type="url"
-                  placeholder="URL Video (optional)"
+                  placeholder={t('videoUrl')}
                   value={editFormData.video_url || ''}
-                  onChange={(e) => setEditFormData({ ...editFormData, video_url: e.target.value })}
-                  className="px-4 py-2 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-forest-green md:col-span-2"
+                  onChange={(e) => setEditFormData({ ...editFormData, video_url: e.target.value || undefined })}
+                  className="px-4 py-2 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-forest-green md:col-span-2 text-sm sm:text-base"
                 />
               </div>
               <textarea
-                placeholder="Descriere"
+                placeholder={t('description')}
                 value={editFormData.description}
                 onChange={(e) => setEditFormData({ ...editFormData, description: e.target.value })}
-                className="px-4 py-2 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-forest-green w-full mb-6"
+                className="px-4 py-2 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-forest-green w-full mb-6 text-sm sm:text-base"
                 rows={3}
               />
               <div className="flex gap-2 mb-4">
-                <label className="flex items-center gap-2">
+                <label className="flex items-center gap-2 cursor-pointer">
                   <input
                     type="checkbox"
                     checked={editFormData.sold || false}
                     onChange={(e) => setEditFormData({ ...editFormData, sold: e.target.checked })}
                     className="w-4 h-4"
                   />
-                  <span className="text-sm font-medium">Marchez ca SOLD</span>
+                  <span className="text-sm font-medium">{t('markAsSold')}</span>
                 </label>
               </div>
               <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
@@ -578,19 +737,19 @@ export default function AdminPage() {
                   onClick={handleEditSave}
                   className="flex-1 px-4 sm:px-6 py-2 sm:py-3 bg-forest-green text-white rounded-lg hover:bg-forest-green-light active:scale-95 font-medium transition-all text-sm sm:text-base"
                 >
-                  ✓ Salvează
+                  ✓ {t('save')}
                 </button>
                 <button
                   onClick={() => handleDelete(editingId)}
                   className="flex-1 px-4 sm:px-6 py-2 sm:py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 active:scale-95 font-medium transition-all text-sm sm:text-base"
                 >
-                  🗑️ Șterge
+                  🗑️ {t('delete')}
                 </button>
                 <button
                   onClick={handleEditCancel}
                   className="flex-1 px-4 sm:px-6 py-2 sm:py-3 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 active:scale-95 font-medium transition-all text-sm sm:text-base"
                 >
-                  ✕ Anulează
+                  ✕ {t('cancel')}
                 </button>
               </div>
             </div>
@@ -600,36 +759,29 @@ export default function AdminPage() {
         {/* Add Property Form */}
         {tab === 'properties' && showAddForm && (
           <div className="bg-white rounded-lg shadow-lg p-4 sm:p-6 mb-6 sm:mb-8 animate-fade-in border-2 border-forest-green">
-            <h3 className="text-lg sm:text-xl font-bold text-charcoal mb-4 sm:mb-6">Adaug proprietate nouă</h3>
+            <h3 className="text-lg sm:text-xl font-bold text-charcoal mb-4 sm:mb-6">{t('addNewProperty')}</h3>
             <form onSubmit={handleAddProperty} className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
               <input
                 type="text"
-                placeholder="Titlu proprietate *"
+                placeholder={`${t('title')} *`}
                 value={formData.title}
                 onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                className="px-3 sm:px-4 py-2 sm:py-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-forest-green text-base"
+                className="px-3 sm:px-4 py-2 sm:py-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-forest-green text-base md:col-span-2"
               />
               <select
                 value={formData.type}
                 onChange={(e) => setFormData({ ...formData, type: e.target.value as any })}
-                className="px-4 py-2 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-forest-green"
+                className="px-4 py-2 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-forest-green text-sm sm:text-base"
               >
-                <option value="casa">Casă</option>
-                <option value="apartament">Apartament</option>
-                <option value="teren">Teren</option>
-                <option value="comercial">Spațiu comercial</option>
+                <option value="casa">{t('house')}</option>
+                <option value="apartament">{t('apartment')}</option>
+                <option value="teren">{t('land')}</option>
+                <option value="comercial">{t('commercial')}</option>
               </select>
-              <input
-                type="text"
-                placeholder="Adresă *"
-                value={formData.address}
-                onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                className="px-4 py-2 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-forest-green"
-              />
               <select
                 value={formData.locality}
                 onChange={(e) => setFormData({ ...formData, locality: e.target.value })}
-                className="px-4 py-2 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-forest-green"
+                className="px-4 py-2 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-forest-green text-sm sm:text-base"
               >
                 <option value="Strășeni">Strășeni</option>
                 <option value="Cojușna">Cojușna</option>
@@ -639,101 +791,154 @@ export default function AdminPage() {
                 <option value="Căpriana">Căpriana</option>
               </select>
               <input
-                type="number"
-                placeholder="Preț (EUR) *"
-                value={formData.price}
-                onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                className="px-4 py-2 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-forest-green"
+                type="text"
+                placeholder={`${t('address')} *`}
+                value={formData.address}
+                onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                className="px-4 py-2 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-forest-green md:col-span-2 text-sm sm:text-base"
               />
               <input
                 type="number"
-                placeholder="Suprafață (mp) *"
+                placeholder={`${t('price')} *`}
+                value={formData.price}
+                onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+                className="px-4 py-2 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-forest-green text-sm sm:text-base"
+              />
+              <input
+                type="number"
+                placeholder={`${t('area')} *`}
                 value={formData.area}
                 onChange={(e) => setFormData({ ...formData, area: e.target.value })}
-                className="px-4 py-2 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-forest-green"
+                className="px-4 py-2 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-forest-green text-sm sm:text-base"
+              />
+              <input
+                type="number"
+                placeholder={t('rooms')}
+                value={formData.rooms}
+                onChange={(e) => setFormData({ ...formData, rooms: e.target.value })}
+                className="px-4 py-2 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-forest-green text-sm sm:text-base"
+              />
+              <input
+                type="number"
+                placeholder={t('landArea')}
+                value={formData.land_area}
+                onChange={(e) => setFormData({ ...formData, land_area: e.target.value })}
+                className="px-4 py-2 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-forest-green text-sm sm:text-base"
+              />
+              <input
+                type="number"
+                placeholder={t('year')}
+                value={formData.year}
+                onChange={(e) => setFormData({ ...formData, year: e.target.value })}
+                className="px-4 py-2 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-forest-green text-sm sm:text-base"
+              />
+              <select
+                value={formData.condition}
+                onChange={(e) => setFormData({ ...formData, condition: e.target.value })}
+                className="px-4 py-2 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-forest-green text-sm sm:text-base"
+              >
+                <option value="">{t('condition')}</option>
+                <option value="Bună">Bună</option>
+                <option value="Foarte bună">Foarte bună</option>
+                <option value="Nouă">Nouă</option>
+                <option value="De renovat">De renovat</option>
+              </select>
+              <input
+                type="text"
+                placeholder={t('heating')}
+                value={formData.heating}
+                onChange={(e) => setFormData({ ...formData, heating: e.target.value })}
+                className="px-4 py-2 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-forest-green text-sm sm:text-base"
               />
               <textarea
-                placeholder="Descriere"
+                placeholder={t('description')}
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                className="px-4 py-2 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-forest-green md:col-span-2"
+                className="px-4 py-2 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-forest-green md:col-span-2 text-sm sm:text-base"
                 rows={3}
               />
               <input
                 type="url"
-                placeholder="URL Video (optional)"
+                placeholder={t('videoUrl')}
                 value={formData.video_url}
                 onChange={(e) => setFormData({ ...formData, video_url: e.target.value })}
-                className="px-4 py-2 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-forest-green md:col-span-2"
+                className="px-4 py-2 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-forest-green md:col-span-2 text-sm sm:text-base"
               />
               <button
                 type="submit"
                 className="md:col-span-2 px-4 sm:px-6 py-2 sm:py-3 bg-forest-green text-white rounded-lg hover:bg-forest-green-light active:scale-95 font-medium transition-all text-sm sm:text-base"
               >
-                ✓ Adaug proprietate
+                ✓ {t('addProperty')}
               </button>
             </form>
           </div>
         )}
 
         <div className="grid gap-4">
-            {properties.map((property, index) => (
-              <div
-                key={property.id}
-                className={`bg-white rounded-lg shadow hover:shadow-lg transition-all transform hover:scale-102 p-6 border-l-4 ${
-                  property.sold
-                    ? 'border-gray-400 opacity-60'
-                    : 'border-forest-green'
-                } animate-fade-in`}
-                style={{ animationDelay: `${index * 50}ms` }}
-              >
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-3 mb-2">
-                      <img
-                        src={property.image}
-                        alt={property.title}
-                        className={`w-12 sm:w-16 h-12 sm:h-16 rounded object-cover flex-shrink-0 ${
-                          property.sold ? 'grayscale' : ''
-                        }`}
-                      />
-                      <div className="min-w-0">
-                        <h3 className="font-bold text-base sm:text-lg text-charcoal line-clamp-1">{property.title}</h3>
-                        <p className="text-xs sm:text-sm text-text-muted truncate">{property.address}</p>
+            {filteredProperties.length === 0 ? (
+              <div className="bg-white rounded-lg shadow p-6 text-center">
+                <p className="text-text-muted">{t('noLeads')}</p>
+              </div>
+            ) : (
+              filteredProperties.map((property, index) => (
+                <div
+                  key={property.id}
+                  className={`bg-white rounded-lg shadow hover:shadow-lg transition-all transform hover:scale-102 p-4 sm:p-6 border-l-4 ${
+                    property.sold
+                      ? 'border-gray-400 opacity-60'
+                      : 'border-forest-green'
+                  } animate-fade-in`}
+                  style={{ animationDelay: `${index * 50}ms` }}
+                >
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-2">
+                        <img
+                          src={property.image}
+                          alt={property.title}
+                          className={`w-16 h-16 sm:w-20 sm:h-20 rounded object-cover flex-shrink-0 ${
+                            property.sold ? 'grayscale' : ''
+                          }`}
+                        />
+                        <div className="min-w-0">
+                          <h3 className="font-bold text-base sm:text-lg text-charcoal line-clamp-1">{property.title}</h3>
+                          <p className="text-xs sm:text-sm text-text-muted truncate">{property.address}</p>
+                          <div className="flex flex-wrap gap-2 sm:gap-4 text-xs sm:text-sm text-text-muted mt-2">
+                            <span>📍 {property.locality}</span>
+                            <span>💶 {property.price} EUR</span>
+                            <span>📏 {property.area}m²</span>
+                            {property.rooms && <span>🚪 {property.rooms} {t('rooms')}</span>}
+                            {property.video_url && <span>🎥 Video</span>}
+                            {property.sold && (
+                              <span className="text-gray-500 font-medium">✓ {t('sold')}</span>
+                            )}
+                          </div>
+                        </div>
                       </div>
                     </div>
-                    <div className="flex flex-wrap gap-2 sm:gap-4 text-xs sm:text-sm text-text-muted">
-                      <span>📍 {property.locality}</span>
-                      <span>💶 {property.price} EUR</span>
-                      <span>📏 {property.area}m²</span>
-                      {property.video_url && <span>🎥 Video</span>}
-                      {property.sold && (
-                        <span className="text-gray-500 font-medium">✓ VÂNDUT</span>
-                      )}
+
+                    <div className="flex flex-col gap-2 w-full sm:w-auto">
+                      <button
+                        onClick={() => handleEditStart(property)}
+                        className="px-3 sm:px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 active:scale-95 font-medium transition-all text-sm sm:text-base whitespace-nowrap"
+                      >
+                        ✏️ {t('edit')}
+                      </button>
+                      <button
+                        onClick={() => handleToggleSold(property.id)}
+                        className={`px-3 sm:px-4 py-2 rounded-lg font-medium transition-all active:scale-95 text-sm sm:text-base whitespace-nowrap ${
+                          property.sold
+                            ? 'bg-gray-300 text-gray-700 hover:bg-gray-400'
+                            : 'bg-forest-green text-white hover:bg-forest-green-light'
+                        }`}
+                      >
+                        {property.sold ? t('available_btn') : t('sold')}
+                      </button>
                     </div>
                   </div>
-
-                  <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-                    <button
-                      onClick={() => handleEditStart(property)}
-                      className="px-3 sm:px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 active:scale-95 font-medium transition-all text-sm sm:text-base"
-                    >
-                      ✏️ Editează
-                    </button>
-                    <button
-                      onClick={() => handleToggleSold(property.id)}
-                      className={`px-3 sm:px-4 py-2 rounded-lg font-medium transition-all active:scale-95 text-sm sm:text-base ${
-                        property.sold
-                          ? 'bg-gray-300 text-gray-700 hover:bg-gray-400'
-                          : 'bg-forest-green text-white hover:bg-forest-green-light'
-                      }`}
-                    >
-                      {property.sold ? 'Disponibil' : 'SOLD'}
-                    </button>
-                  </div>
                 </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         </>
         )}
@@ -742,23 +947,23 @@ export default function AdminPage() {
           <div className="space-y-3 sm:space-y-4">
             {leads.filter(l => l.status === 'pending').length === 0 ? (
               <div className="bg-white rounded-lg shadow p-6 text-center">
-                <p className="text-text-muted">Nici un lead în așteptare</p>
+                <p className="text-text-muted">{t('noLeads')}</p>
               </div>
             ) : (
               leads.filter(l => l.status === 'pending').map((lead) => (
                 <div key={lead.id} className="bg-white rounded-lg shadow p-4 sm:p-6 border-l-4 border-orange-500">
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4 mb-4">
                   <div>
-                    <p className="text-sm text-text-muted">Proprietate</p>
+                    <p className="text-sm text-text-muted">{t('property')}</p>
                     <p className="font-bold text-charcoal">{lead.title}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-text-muted">Contact</p>
+                    <p className="text-sm text-text-muted">{t('contact')}</p>
                     <p className="font-bold text-charcoal">{lead.contact_name}</p>
                     <p className="text-sm">{lead.contact_phone}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-text-muted">Locație</p>
+                    <p className="text-sm text-text-muted">{t('location')}</p>
                     <p className="font-bold text-charcoal">{lead.locality}</p>
                     <p className="text-sm">{lead.address}</p>
                   </div>
@@ -771,13 +976,13 @@ export default function AdminPage() {
                     onClick={() => handleApproveLead(lead.id, lead)}
                     className="flex-1 px-4 py-2 bg-forest-green text-white rounded-lg hover:bg-forest-green-light active:scale-95 font-medium transition-all text-sm sm:text-base"
                   >
-                    ✓ Aprobă
+                    ✓ {t('approve')}
                   </button>
                   <button
                     onClick={() => handleRejectLead(lead.id)}
                     className="flex-1 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 active:scale-95 font-medium transition-all text-sm sm:text-base"
                   >
-                    ✕ Respinge
+                    ✕ {t('reject')}
                   </button>
                 </div>
                 </div>
@@ -786,8 +991,8 @@ export default function AdminPage() {
           </div>
         )}
 
-        <Link href="/" className="inline-block mt-8 text-forest-green hover:underline font-medium">
-          ← Înapoi la site
+        <Link href="/" className="inline-block mt-8 text-forest-green hover:underline font-medium text-sm sm:text-base">
+          {t('back')}
         </Link>
       </div>
     </div>
