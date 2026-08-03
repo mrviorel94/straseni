@@ -5,11 +5,66 @@ import Breadcrumbs from '@/components/Breadcrumbs';
 
 export default function ContactPage() {
   const [submitted, setSubmitted] = useState(false);
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    subject: '',
+    message: '',
+  });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSubmitted(true);
-    setTimeout(() => setSubmitted(false), 3000);
+    setError('');
+
+    if (!formData.name.trim()) {
+      setError('Numele este obligatoriu');
+      return;
+    }
+    if (!formData.email.includes('@')) {
+      setError('Email invalid');
+      return;
+    }
+    if (!formData.message.trim()) {
+      setError('Mesajul este obligatoriu');
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setError(data.error || 'Eroare la trimitere');
+        return;
+      }
+
+      setSubmitted(true);
+      setFormData({ name: '', email: '', phone: '', subject: '', message: '' });
+      setTimeout(() => setSubmitted(false), 5000);
+    } catch (err) {
+      setError('O eroare a apărut. Te rog încearcă din nou.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -93,9 +148,13 @@ export default function ContactPage() {
                 </label>
                 <input
                   type="text"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleInputChange}
                   required
-                  className="w-full px-4 py-2 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-forest-green"
+                  className="w-full px-4 py-2 border-2 border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-forest-green focus:border-forest-green transition-all duration-300 form-input-animated"
                   placeholder="Numele tău"
+                  disabled={loading}
                 />
               </div>
 
@@ -105,9 +164,13 @@ export default function ContactPage() {
                 </label>
                 <input
                   type="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleInputChange}
                   required
-                  className="w-full px-4 py-2 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-forest-green"
+                  className="w-full px-4 py-2 border-2 border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-forest-green focus:border-forest-green transition-all duration-300 form-input-animated"
                   placeholder="email@example.com"
+                  disabled={loading}
                 />
               </div>
 
@@ -117,8 +180,12 @@ export default function ContactPage() {
                 </label>
                 <input
                   type="tel"
-                  className="w-full px-4 py-2 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-forest-green"
+                  name="phone"
+                  value={formData.phone}
+                  onChange={handleInputChange}
+                  className="w-full px-4 py-2 border-2 border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-forest-green focus:border-forest-green transition-all duration-300 form-input-animated"
                   placeholder="+373 69 xxx xxx"
+                  disabled={loading}
                 />
               </div>
 
@@ -128,9 +195,13 @@ export default function ContactPage() {
                 </label>
                 <input
                   type="text"
+                  name="subject"
+                  value={formData.subject}
+                  onChange={handleInputChange}
                   required
-                  className="w-full px-4 py-2 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-forest-green"
+                  className="w-full px-4 py-2 border-2 border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-forest-green focus:border-forest-green transition-all duration-300 form-input-animated"
                   placeholder="Cum te pot ajuta?"
+                  disabled={loading}
                 />
               </div>
 
@@ -140,31 +211,42 @@ export default function ContactPage() {
                 </label>
                 <textarea
                   rows={5}
+                  name="message"
+                  value={formData.message}
+                  onChange={handleInputChange}
                   required
-                  className="w-full px-4 py-2 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-forest-green"
+                  className="w-full px-4 py-2 border-2 border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-forest-green focus:border-forest-green transition-all duration-300 form-input-animated"
                   placeholder="Mesajul tău..."
+                  disabled={loading}
                 />
               </div>
 
-              <div>
-                <label className="flex items-center gap-2 text-sm text-text-muted">
-                  <input type="checkbox" required className="rounded" />
-                  Sunt de acord cu politica de confidențialitate
-                </label>
-              </div>
+              {error && (
+                <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm animate-pop-in">
+                  ⚠️ {error}
+                </div>
+              )}
+
+              {submitted && (
+                <div className="p-4 bg-green-50 border border-green-200 rounded-lg text-green-700 text-sm text-center animate-pop-in">
+                  ✓ Mulțumim! Mesajul tău a fost trimis. Voi reveni la tine curând.
+                </div>
+              )}
 
               <button
                 type="submit"
-                className="w-full bg-forest-green text-white px-6 py-3 rounded-lg hover:bg-forest-green-light transition-colors font-medium"
+                disabled={loading}
+                className="w-full bg-forest-green text-white px-6 py-3 rounded-lg hover:bg-forest-green-light active:scale-95 transition-all font-medium disabled:opacity-50 btn-interactive flex items-center justify-center gap-2"
               >
-                Trimite mesajul
+                {loading ? (
+                  <>
+                    <span className="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                    Se trimite...
+                  </>
+                ) : (
+                  '✓ Trimite mesajul'
+                )}
               </button>
-
-              {submitted && (
-                <div className="p-4 bg-success text-white rounded-lg text-sm text-center">
-                  Mulțumim! Voi reveni la tine curând.
-                </div>
-              )}
             </form>
           </div>
         </div>

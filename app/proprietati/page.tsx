@@ -15,16 +15,24 @@ function ProprietatiContent() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch('/api/properties')
-      .then(r => r.json())
-      .then(data => {
-        setProperties(data || []);
-        setLoading(false);
-      })
-      .catch(err => {
+    const fetchProperties = async () => {
+      try {
+        const response = await fetch('/api/properties');
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        console.log('Properties loaded:', data?.length || 0, 'items');
+        setProperties(Array.isArray(data) ? data : []);
+      } catch (err) {
         console.error('Error fetching properties:', err);
+        setProperties([]);
+      } finally {
         setLoading(false);
-      });
+      }
+    };
+
+    fetchProperties();
   }, []);
 
   const propertyType = searchParams.get('type');
@@ -35,31 +43,33 @@ function ProprietatiContent() {
   const filteredProperties = useMemo(() => {
     let filtered = [...properties];
 
-    if (propertyType) {
+    if (propertyType && propertyType !== '') {
       filtered = filtered.filter((p) => p.type === propertyType);
     }
 
-    if (locality) {
+    if (locality && locality !== '') {
       filtered = filtered.filter((p) => p.locality === locality);
     }
 
-    if (minPrice) {
+    if (minPrice && Number(minPrice) > 0) {
       filtered = filtered.filter((p) => p.price >= Number(minPrice));
     }
 
-    if (maxPrice) {
+    if (maxPrice && Number(maxPrice) > 0) {
       filtered = filtered.filter((p) => p.price <= Number(maxPrice));
     }
 
-    // Sort
+    // Sort - default is newest (by created_at or ID)
     if (sortBy === 'price-asc') {
       filtered.sort((a, b) => a.price - b.price);
     } else if (sortBy === 'price-desc') {
       filtered.sort((a, b) => b.price - a.price);
+    } else {
+      filtered.sort((a, b) => Number(b.id) - Number(a.id));
     }
 
     return filtered;
-  }, [propertyType, locality, minPrice, maxPrice, sortBy]);
+  }, [properties, propertyType, locality, minPrice, maxPrice, sortBy]);
 
   return (
     <>
@@ -96,37 +106,39 @@ function ProprietatiContent() {
                 {filteredProperties.length} proprietăți găsite
               </h2>
 
-          <div className="flex gap-4 w-full sm:w-auto">
+          <div className="flex gap-4 w-full sm:w-auto flex-wrap">
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
-              className="flex-1 sm:flex-none px-4 py-2 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-forest-green"
+              className="flex-1 sm:flex-none px-4 py-2 border-2 border-forest-green rounded-lg focus:outline-none focus:ring-2 focus:ring-forest-green focus:border-forest-green bg-white text-charcoal font-medium shadow-sm hover:shadow-md transition-all"
             >
               <option value="newest">Cele mai noi</option>
               <option value="price-asc">Preț: ascendent</option>
               <option value="price-desc">Preț: descendent</option>
             </select>
 
-            <div className="flex border border-light-gray rounded-lg">
+            <div className="flex border-2 border-forest-green rounded-lg overflow-hidden shadow-sm">
               <button
                 onClick={() => setViewMode('grid')}
-                className={`px-4 py-2 ${
+                title="Grid view"
+                className={`px-4 py-2 font-semibold transition-all duration-300 ${
                   viewMode === 'grid'
                     ? 'bg-forest-green text-white'
-                    : 'text-charcoal hover:bg-light-gray'
+                    : 'text-forest-green hover:bg-light-gray'
                 }`}
               >
-                ⊞
+                ⊞ Grid
               </button>
               <button
                 onClick={() => setViewMode('list')}
-                className={`px-4 py-2 border-l border-light-gray ${
+                title="List view"
+                className={`px-4 py-2 font-semibold transition-all duration-300 border-l-2 border-forest-green ${
                   viewMode === 'list'
                     ? 'bg-forest-green text-white'
-                    : 'text-charcoal hover:bg-light-gray'
+                    : 'text-forest-green hover:bg-light-gray'
                 }`}
               >
-                ≡
+                ≡ List
               </button>
             </div>
           </div>
@@ -146,14 +158,14 @@ function ProprietatiContent() {
           </div>
         ) : (
               <div className="text-center py-16">
-                <p className="text-text-muted text-lg mb-4">
+                <p className="text-text-muted text-lg mb-6">
                   Nu am găsit proprietăți care să se potrivească cu criteriile tale.
                 </p>
                 <button
                   onClick={() => window.location.href = '/proprietati'}
-                  className="text-forest-green font-medium hover:text-forest-green-light"
+                  className="px-6 py-3 bg-forest-green text-white font-bold rounded-lg hover:bg-forest-green-light transition-all duration-300 transform hover:scale-105 shadow-md"
                 >
-                  Resetează filtrele
+                  ↻ Resetează filtrele
                 </button>
               </div>
             )}

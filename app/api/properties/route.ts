@@ -10,14 +10,19 @@ export async function GET() {
       .select('*')
       .order('created_at', { ascending: false });
 
-    if (error || !data || data.length === 0) {
-      return Response.json(mockProperties);
+    if (error) {
+      console.error('Supabase error:', error);
+      return NextResponse.json(mockProperties);
     }
 
-    return Response.json(data);
+    if (!data || data.length === 0) {
+      return NextResponse.json(mockProperties);
+    }
+
+    return NextResponse.json(data);
   } catch (error) {
     console.error('Properties API error:', error);
-    return Response.json(mockProperties);
+    return NextResponse.json(mockProperties);
   }
 }
 

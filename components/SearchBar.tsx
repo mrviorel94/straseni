@@ -26,7 +26,7 @@ export default function SearchBar() {
 
   return (
     <form onSubmit={handleSearch} className="bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300">
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Property Type */}
         <div className="group">
           <label className="block text-sm font-medium text-charcoal mb-2 group-hover:text-forest-green transition-colors duration-300">
@@ -35,7 +35,7 @@ export default function SearchBar() {
           <select
             value={propertyType}
             onChange={(e) => setPropertyType(e.target.value)}
-            className="w-full px-4 py-2 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-forest-green hover:border-forest-green transition-all duration-300"
+            className="w-full px-4 py-2 border-2 border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-forest-green focus:border-forest-green hover:border-forest-green transition-all duration-300 bg-white text-charcoal font-medium"
           >
             <option value="">Toate tipurile</option>
             <option value="casa">Casă</option>
@@ -53,7 +53,7 @@ export default function SearchBar() {
           <select
             value={locality}
             onChange={(e) => setLocality(e.target.value)}
-            className="w-full px-4 py-2 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-forest-green hover:border-forest-green transition-all duration-300"
+            className="w-full px-4 py-2 border-2 border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-forest-green focus:border-forest-green hover:border-forest-green transition-all duration-300 bg-white text-charcoal font-medium"
           >
             <option value="">Toate localitățile</option>
             <option value="Strășeni">Strășeni</option>
@@ -75,7 +75,7 @@ export default function SearchBar() {
             value={minPrice}
             onChange={(e) => setMinPrice(e.target.value)}
             placeholder="EUR"
-            className="w-full px-4 py-2 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-forest-green hover:border-forest-green transition-all duration-300"
+            className="w-full px-4 py-2 border-2 border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-forest-green focus:border-forest-green hover:border-forest-green transition-all duration-300 bg-white text-charcoal font-medium"
           />
         </div>
 
@@ -89,17 +89,17 @@ export default function SearchBar() {
             value={maxPrice}
             onChange={(e) => setMaxPrice(e.target.value)}
             placeholder="EUR"
-            className="w-full px-4 py-2 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-forest-green hover:border-forest-green transition-all duration-300"
+            className="w-full px-4 py-2 border-2 border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-forest-green focus:border-forest-green hover:border-forest-green transition-all duration-300 bg-white text-charcoal font-medium"
           />
         </div>
 
         {/* Search Button */}
-        <div className="flex items-end">
+        <div className="sm:col-span-2 lg:col-span-1 flex items-end">
           <button
             type="submit"
-            className="w-full bg-forest-green text-white px-6 py-2 rounded-lg hover:bg-forest-green-light transition-all duration-300 font-medium transform hover:scale-105 active:scale-95"
+            className="w-full bg-forest-green text-white px-6 py-2 rounded-lg hover:bg-forest-green-light active:scale-95 transition-all duration-300 font-bold text-base shadow-md hover:shadow-lg transform hover:scale-105"
           >
-            Caută proprietăți
+            🔍 Caută
           </button>
         </div>
       </div>

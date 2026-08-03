@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense } from 'react';
+import { Suspense, useState } from 'react';
 import Link from 'next/link';
 import SearchBar from '@/components/SearchBar';
 import PropertyCard from '@/components/PropertyCard';
@@ -8,9 +8,50 @@ import LocalityCard from '@/components/LocalityCard';
 import ArticleCard from '@/components/ArticleCard';
 import ServiceCard from '@/components/ServiceCard';
 import ValuationForm from '@/components/ValuationForm';
+import ScrollReveal from '@/components/ScrollReveal';
 import { mockProperties, mockLocalities, mockArticles, mockServices } from '@/lib/mockData';
 
 export default function Home() {
+  const [newsletterEmail, setNewsletterEmail] = useState('');
+  const [newsletterStatus, setNewsletterStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+  const [newsletterMessage, setNewsletterMessage] = useState('');
+
+  const handleNewsletterSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!newsletterEmail.includes('@')) {
+      setNewsletterStatus('error');
+      setNewsletterMessage('Email invalid');
+      return;
+    }
+
+    setNewsletterStatus('loading');
+
+    try {
+      const response = await fetch('/api/newsletter', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: newsletterEmail }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setNewsletterStatus('error');
+        setNewsletterMessage(data.error || 'Eroare la abonare');
+        return;
+      }
+
+      setNewsletterStatus('success');
+      setNewsletterMessage('Ți-ai abonat cu succes! Verifică email-ul pentru confirmare.');
+      setNewsletterEmail('');
+      setTimeout(() => setNewsletterStatus('idle'), 5000);
+    } catch (err) {
+      setNewsletterStatus('error');
+      setNewsletterMessage('O eroare a apărut. Te rog încearcă din nou.');
+    }
+  };
+
   const featuredProperties = mockProperties.filter((p) => p.featured).slice(0, 6);
   const recentArticles = mockArticles.slice(0, 3);
 
@@ -62,14 +103,16 @@ export default function Home() {
 
       {/* Featured Properties */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-        <div className="text-center mb-12 animate-slide-up">
-          <h2 className="text-3xl sm:text-4xl font-bold text-charcoal mb-4">
-            Proprietăți promovate
-          </h2>
-          <p className="text-text-muted text-lg max-w-2xl mx-auto">
-            Selecție de proprietăți verificate și recomandate din Strășeni și împrejurimi
-          </p>
-        </div>
+        <ScrollReveal>
+          <div className="text-center mb-12 animate-slide-up">
+            <h2 className="text-3xl sm:text-4xl font-bold text-charcoal mb-4">
+              Proprietăți promovate
+            </h2>
+            <p className="text-text-muted text-lg max-w-2xl mx-auto">
+              Selecție de proprietăți verificate și recomandate din Strășeni și împrejurimi
+            </p>
+          </div>
+        </ScrollReveal>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
           {featuredProperties.map((property, index) => (
@@ -92,14 +135,16 @@ export default function Home() {
       {/* Localities Section */}
       <section className="bg-light-gray py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12 animate-slide-up">
-            <h2 className="text-3xl sm:text-4xl font-bold text-charcoal mb-4">
-              Localități din raionul Strășeni
-            </h2>
-            <p className="text-text-muted text-lg max-w-2xl mx-auto">
-              Descoperă comunități frumoase lângă Chișinău
-            </p>
-          </div>
+          <ScrollReveal>
+            <div className="text-center mb-12 animate-slide-up">
+              <h2 className="text-3xl sm:text-4xl font-bold text-charcoal mb-4">
+                Localități din raionul Strășeni
+              </h2>
+              <p className="text-text-muted text-lg max-w-2xl mx-auto">
+                Descoperă comunități frumoase lângă Chișinău
+              </p>
+            </div>
+          </ScrollReveal>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
             {mockLocalities.slice(0, 6).map((locality, index) => (
@@ -122,14 +167,16 @@ export default function Home() {
 
       {/* Services Section */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-        <div className="text-center mb-12 animate-slide-up">
-          <h2 className="text-3xl sm:text-4xl font-bold text-charcoal mb-4">
-            Cum te pot ajuta
-          </h2>
-          <p className="text-text-muted text-lg max-w-2xl mx-auto">
-            Ofer consultanță profesională pentru cumpărători și vânzători
-          </p>
-        </div>
+        <ScrollReveal>
+          <div className="text-center mb-12 animate-slide-up">
+            <h2 className="text-3xl sm:text-4xl font-bold text-charcoal mb-4">
+              Cum te pot ajuta
+            </h2>
+            <p className="text-text-muted text-lg max-w-2xl mx-auto">
+              Ofer consultanță profesională pentru cumpărători și vânzători
+            </p>
+          </div>
+        </ScrollReveal>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {mockServices.map((service, index) => (
@@ -158,14 +205,16 @@ export default function Home() {
 
       {/* Blog Section */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-        <div className="text-center mb-12 animate-slide-up">
-          <h2 className="text-3xl sm:text-4xl font-bold text-charcoal mb-4">
-            Articole recente
-          </h2>
-          <p className="text-text-muted text-lg max-w-2xl mx-auto">
-            Sfaturi și informații despre piața imobiliară din Strășeni
-          </p>
-        </div>
+        <ScrollReveal>
+          <div className="text-center mb-12 animate-slide-up">
+            <h2 className="text-3xl sm:text-4xl font-bold text-charcoal mb-4">
+              Articole recente
+            </h2>
+            <p className="text-text-muted text-lg max-w-2xl mx-auto">
+              Sfaturi și informații despre piața imobiliară din Strășeni
+            </p>
+          </div>
+        </ScrollReveal>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
           {recentArticles.map((article, index) => (
@@ -232,7 +281,8 @@ export default function Home() {
 
       {/* Newsletter */}
       <section className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-        <div className="bg-white border-2 border-light-gray rounded-lg p-8 text-center animate-slide-up hover:border-forest-green transition-colors duration-300">
+        <ScrollReveal>
+          <div className="bg-white border-2 border-light-gray rounded-lg p-8 text-center animate-slide-up hover:border-forest-green transition-colors duration-300">
           <h2 className="text-2xl sm:text-3xl font-bold text-charcoal mb-4">
             Primește noutăți despre piața imobiliară
           </h2>
@@ -240,21 +290,45 @@ export default function Home() {
             Abonează-te la newsletter-ul nostru pentru articole, sfaturi și noi listinguri
           </p>
 
-          <form className="flex flex-col sm:flex-row gap-3">
+          <form onSubmit={handleNewsletterSubmit} className="flex flex-col sm:flex-row gap-3">
             <input
               type="email"
+              value={newsletterEmail}
+              onChange={(e) => setNewsletterEmail(e.target.value)}
               placeholder="Adresa ta de email"
-              className="flex-1 px-4 py-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-forest-green transition-all duration-300 hover:border-forest-green"
+              className="flex-1 px-4 py-3 border-2 border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-forest-green focus:border-forest-green transition-all duration-300 hover:border-forest-green form-input-animated"
               required
+              disabled={newsletterStatus === 'loading'}
             />
             <button
               type="submit"
-              className="bg-forest-green text-white px-8 py-3 rounded-lg hover:bg-forest-green-light transition-all duration-300 font-medium whitespace-nowrap transform hover:scale-105"
+              disabled={newsletterStatus === 'loading'}
+              className="bg-forest-green text-white px-8 py-3 rounded-lg hover:bg-forest-green-light active:scale-95 transition-all duration-300 font-medium whitespace-nowrap transform hover:scale-105 disabled:opacity-50 btn-interactive flex items-center justify-center gap-2"
             >
-              Abonează-te
+              {newsletterStatus === 'loading' ? (
+                <>
+                  <span className="inline-block w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                  Se abonează...
+                </>
+              ) : (
+                '✓ Abonează-te'
+              )}
             </button>
           </form>
+
+          {newsletterStatus === 'success' && (
+            <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg text-green-700 text-sm animate-pop-in">
+              ✓ {newsletterMessage}
+            </div>
+          )}
+
+          {newsletterStatus === 'error' && (
+            <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm animate-pop-in">
+              ⚠️ {newsletterMessage}
+            </div>
+          )}
         </div>
+        </ScrollReveal>
       </section>
 
     </>
