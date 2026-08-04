@@ -4,10 +4,10 @@ import { NextResponse } from 'next/server';
 
 export async function POST(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const propertyId = params.id;
+    const { id: propertyId } = await params;
 
     const { data, error } = await supabase
       .from('properties')
