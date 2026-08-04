@@ -29,13 +29,16 @@ export const translations = {
     edit: '✏️ Editează',
     sold: 'SOLD',
     available_btn: 'Disponibil',
-    markAsSold: 'Marchez ca SOLD',
+    markAsSold: 'Marchează ca SOLD',
+    uploadImages: 'Încarcă imagini',
     deleteConfirm: 'Sigur dorești să ștergi această proprietate?',
     propertyAdded: '✓ Proprietate adăugată',
     propertyUpdated: '✓ Proprietate actualizată',
     propertyDeleted: '✓ Proprietate ștearsă',
     deleteError: 'Eroare la ștergere',
     timeout: 'Timeout - serverul nu a răspuns. Încearcă din nou.',
+    video: 'Video',
+    views: 'vizualizări',
 
     // Leads
     leads: 'Leads',
@@ -68,6 +71,11 @@ export const translations = {
     condition: 'Stare',
     heating: 'Încălzire',
     roadAccess: 'Acces drum',
+    emailPlaceholder: 'your@email.com',
+    conditionGood: 'Bună',
+    conditionVeryGood: 'Foarte bună',
+    conditionNew: 'Nouă',
+    conditionRenovation: 'De renovat',
 
     // Filters
     filters: 'Filtre',
@@ -76,10 +84,20 @@ export const translations = {
     filterByPrice: 'Preț',
     showSold: 'Arată SOLD',
     showAvailable: 'Arată Disponibile',
+    reset: 'Resetează',
 
     // Validation
     fillRequired: 'Completează toate câmpurile obligatorii',
     error: 'Eroare',
+
+    // Dashboard
+    dashboard: 'Dashboard',
+    soldUnavailable: 'Vândut/Indisponibil',
+    awaitingReview: 'În curs de examinare',
+    acrossAllProperties: 'Peste toate proprietățile',
+    pending: 'În așteptare',
+    topPropertiesByViews: 'Proprietăți cele mai vizionate',
+    totalViews: 'Total vizualizări',
   },
 
   ru: {
@@ -111,12 +129,15 @@ export const translations = {
     sold: 'ПРОДАНО',
     available_btn: 'Доступно',
     markAsSold: 'Отметить как ПРОДАНО',
+    uploadImages: 'Загрузить изображения',
     deleteConfirm: 'Вы уверены, что хотите удалить этот объект?',
     propertyAdded: '✓ Объект добавлен',
     propertyUpdated: '✓ Объект обновлен',
     propertyDeleted: '✓ Объект удален',
     deleteError: 'Ошибка удаления',
     timeout: 'Timeout - сервер не ответил. Попробуйте еще раз.',
+    video: 'Видео',
+    views: 'просмотров',
 
     // Leads
     leads: 'Заявки',
@@ -149,6 +170,11 @@ export const translations = {
     condition: 'Состояние',
     heating: 'Отопление',
     roadAccess: 'Доступ на дорогу',
+    emailPlaceholder: 'your@email.com',
+    conditionGood: 'Хорошее',
+    conditionVeryGood: 'Очень хорошее',
+    conditionNew: 'Новое',
+    conditionRenovation: 'Требует ремонта',
 
     // Filters
     filters: 'Фильтры',
@@ -157,10 +183,20 @@ export const translations = {
     filterByPrice: 'Цена',
     showSold: 'Показать ПРОДАНО',
     showAvailable: 'Показать Доступные',
+    reset: 'Сброс',
 
     // Validation
     fillRequired: 'Заполните все необходимые поля',
     error: 'Ошибка',
+
+    // Dashboard
+    dashboard: 'Панель управления',
+    soldUnavailable: 'Продано/Недоступно',
+    awaitingReview: 'Ожидание проверки',
+    acrossAllProperties: 'Во всех объектах',
+    pending: 'Ожидание',
+    topPropertiesByViews: 'Топ объектов по просмотрам',
+    totalViews: 'Всего просмотров',
   }
 };
 

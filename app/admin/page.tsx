@@ -31,7 +31,7 @@ export default function AdminPage() {
   const [properties, setProperties] = useState<Property[]>([]);
   const [leads, setLeads] = useState<Lead[]>([]);
   const [showAddForm, setShowAddForm] = useState(false);
-  const [tab, setTab] = useState<'properties' | 'leads'>('properties');
+  const [tab, setTab] = useState<'dashboard' | 'properties' | 'leads'>('dashboard');
   const [lang, setLang] = useState<Language>('ro');
   const t = (key: keyof typeof translations.ro) => getTranslation(lang, key);
 
@@ -60,6 +60,8 @@ export default function AdminPage() {
   });
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editFormData, setEditFormData] = useState<Partial<Property> | null>(null);
+  const [uploadingImages, setUploadingImages] = useState<File[]>([]);
+  const [editUploadingImages, setEditUploadingImages] = useState<(File | string)[]>([]);
 
   const filteredProperties = properties.filter(prop => {
     const matchType = !filterType || prop.type === filterType;
@@ -125,6 +127,32 @@ export default function AdminPage() {
     }
   };
 
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>, isEdit: boolean = false) => {
+    const files = Array.from(e.target.files || []);
+    if (isEdit) {
+      setEditUploadingImages([...(editUploadingImages as (File | string)[]), ...files]);
+    } else {
+      setUploadingImages([...uploadingImages, ...files]);
+    }
+  };
+
+  const removeImage = (index: number, isEdit: boolean = false) => {
+    if (isEdit) {
+      setEditUploadingImages(editUploadingImages.filter((_, i) => i !== index));
+    } else {
+      setUploadingImages(uploadingImages.filter((_, i) => i !== index));
+    }
+  };
+
+  const fileToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = reject;
+    });
+  };
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
@@ -172,6 +200,20 @@ export default function AdminPage() {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 10000);
 
+      // Convert uploaded files to base64
+      const uploadedImages: string[] = [];
+      for (const file of uploadingImages) {
+        try {
+          const base64 = await fileToBase64(file);
+          uploadedImages.push(base64);
+        } catch (err) {
+          console.error('Error converting image:', err);
+        }
+      }
+
+      const allImages = [...uploadedImages, formData.image];
+      const mainImage = uploadedImages.length > 0 ? uploadedImages[0] : formData.image;
+
       const headers: Record<string, string> = {
         'Content-Type': 'application/json',
       };
@@ -194,8 +236,8 @@ export default function AdminPage() {
           year: formData.year || null,
           condition: formData.condition || null,
           heating: formData.heating || null,
-          image: formData.image,
-          images: [formData.image],
+          image: mainImage,
+          images: allImages,
           description: formData.description,
           video_url: formData.video_url || null,
           amenities: [],
@@ -204,6 +246,7 @@ export default function AdminPage() {
           contact_name: 'Contact',
           contact_phone: '+373 69 000 000',
           sold: false,
+          view_count: 0,
         }),
       });
 
@@ -211,6 +254,7 @@ export default function AdminPage() {
 
       if (res.ok) {
         setFormData({ title: '', type: 'casa', locality: 'Strășeni', address: '', price: '', area: '', rooms: '', land_area: '', year: '', condition: '', heating: '', description: '', video_url: '', image: 'https://images.unsplash.com/photo-1570129477492-45c003d96918?w=800&h=600&fit=crop' });
+        setUploadingImages([]);
         setShowAddForm(false);
         await fetchData();
         alert(t('propertyAdded'));
@@ -231,6 +275,7 @@ export default function AdminPage() {
   const handleEditStart = (property: Property) => {
     setEditingId(property.id);
     setEditFormData(property);
+    setEditUploadingImages(property.images || [property.image]);
   };
 
   const handleEditSave = async () => {
@@ -247,6 +292,30 @@ export default function AdminPage() {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 10000);
 
+      // Convert new files to base64
+      const newImages: string[] = [];
+      for (const item of editUploadingImages) {
+        if (item instanceof File) {
+          try {
+            const base64 = await fileToBase64(item);
+            newImages.push(base64);
+          } catch (err) {
+            console.error('Error converting image:', err);
+          }
+        } else if (typeof item === 'string') {
+          newImages.push(item);
+        }
+      }
+
+      const finalImages = newImages.length > 0 ? newImages : editFormData.images;
+      const mainImage = finalImages && finalImages.length > 0 ? finalImages[0] : editFormData.image;
+
+      const updatedData = {
+        ...editFormData,
+        image: mainImage,
+        images: finalImages,
+      };
+
       const headers: Record<string, string> = {
         'Content-Type': 'application/json',
       };
@@ -256,7 +325,7 @@ export default function AdminPage() {
         method: 'PUT',
         signal: controller.signal,
         headers,
-        body: JSON.stringify(editFormData),
+        body: JSON.stringify(updatedData),
       });
 
       clearTimeout(timeoutId);
@@ -264,6 +333,7 @@ export default function AdminPage() {
       if (res.ok) {
         setEditingId(null);
         setEditFormData(null);
+        setEditUploadingImages([]);
         await fetchData();
         alert(t('propertyUpdated'));
       } else {
@@ -274,7 +344,7 @@ export default function AdminPage() {
       if (error.name === 'AbortError') {
         alert(t('timeout'));
       } else {
-        alert(`${t('error')}: ${t('error')}`);
+        alert(`${t('error')}: ${String(error)}`);
       }
       console.error(error);
     }
@@ -435,7 +505,7 @@ export default function AdminPage() {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="your@email.com"
+                placeholder={t('emailPlaceholder')}
                 className="w-full px-4 py-3 border-2 border-light-gray rounded-lg focus:outline-none focus:border-forest-green transition-colors text-base"
                 required
               />
@@ -500,6 +570,16 @@ export default function AdminPage() {
       <div className="bg-white border-b border-light-gray sticky top-16 z-10 overflow-x-auto">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex gap-4 sm:gap-8 min-w-max sm:min-w-full">
           <button
+            onClick={() => setTab('dashboard')}
+            className={`py-4 px-2 sm:px-4 font-medium border-b-2 text-sm sm:text-base whitespace-nowrap transition-colors ${
+              tab === 'dashboard'
+                ? 'border-forest-green text-forest-green'
+                : 'border-transparent text-text-muted hover:text-charcoal'
+            }`}
+          >
+            📊 {t('dashboard')}
+          </button>
+          <button
             onClick={() => setTab('properties')}
             className={`py-4 px-2 sm:px-4 font-medium border-b-2 text-sm sm:text-base whitespace-nowrap transition-colors ${
               tab === 'properties'
@@ -524,12 +604,72 @@ export default function AdminPage() {
 
       {/* Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
+        {tab === 'dashboard' && (
+          <>
+            <h2 className="text-3xl font-bold text-charcoal mb-8">📊 {t('adminPanel')}</h2>
+
+            {/* Stats Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+              <div className="bg-gradient-to-br from-forest-green to-forest-green-light rounded-lg p-6 text-white shadow-lg">
+                <p className="text-sm opacity-90 mb-2">{t('properties')}</p>
+                <p className="text-4xl font-bold">{properties.length}</p>
+                <p className="text-xs opacity-75 mt-2">{properties.filter(p => !p.sold).length} {t('available')}</p>
+              </div>
+
+              <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg p-6 text-white shadow-lg">
+                <p className="text-sm opacity-90 mb-2">{t('sold')}</p>
+                <p className="text-4xl font-bold">{properties.filter(p => p.sold).length}</p>
+                <p className="text-xs opacity-75 mt-2">{t('soldUnavailable')}</p>
+              </div>
+
+              <div className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg p-6 text-white shadow-lg">
+                <p className="text-sm opacity-90 mb-2">{t('leads')} {t('pending')}</p>
+                <p className="text-4xl font-bold">{leads.filter(l => l.status === 'pending').length}</p>
+                <p className="text-xs opacity-75 mt-2">{t('awaitingReview')}</p>
+              </div>
+
+              <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg p-6 text-white shadow-lg">
+                <p className="text-sm opacity-90 mb-2">👁️ {t('totalViews')}</p>
+                <p className="text-4xl font-bold">{properties.reduce((sum, p) => sum + (p.view_count || 0), 0)}</p>
+                <p className="text-xs opacity-75 mt-2">{t('acrossAllProperties')}</p>
+              </div>
+            </div>
+
+            {/* Top Properties by Views */}
+            <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
+              <h3 className="text-xl font-bold text-charcoal mb-4">👁️ {t('topPropertiesByViews')}</h3>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead className="border-b-2 border-light-gray">
+                    <tr>
+                      <th className="text-left py-3 px-4 font-bold">{t('title')}</th>
+                      <th className="text-left py-3 px-4 font-bold">{t('type')}</th>
+                      <th className="text-left py-3 px-4 font-bold">{t('price')}</th>
+                      <th className="text-center py-3 px-4 font-bold">👁️ {t('views')}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {[...properties].sort((a, b) => (b.view_count || 0) - (a.view_count || 0)).slice(0, 5).map((prop) => (
+                      <tr key={prop.id} className="border-b border-light-gray hover:bg-light-gray transition">
+                        <td className="py-3 px-4 line-clamp-1">{prop.title}</td>
+                        <td className="py-3 px-4">{prop.type}</td>
+                        <td className="py-3 px-4">{prop.price} EUR</td>
+                        <td className="py-3 px-4 text-center font-bold text-forest-green">{prop.view_count || 0}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </>
+        )}
+
         {tab === 'properties' && (
           <>
             <div className="flex flex-col sm:flex-row justify-between items-start gap-4 mb-6 sm:mb-8">
               <div className="flex-1">
                 <h2 className="text-2xl sm:text-3xl font-bold text-charcoal mb-2">{t('manageProperties')}</h2>
-                <p className="text-sm sm:text-base text-text-muted">{t('total')}: {properties.length} {t('total')} ({properties.filter(p => !p.sold).length} {t('available')})</p>
+                <p className="text-sm sm:text-base text-text-muted">{t('total')}: {properties.length} • {properties.filter(p => !p.sold).length} {t('available')}</p>
               </div>
               <button
                 onClick={() => setShowAddForm(!showAddForm)}
@@ -595,7 +735,7 @@ export default function AdminPage() {
                   }}
                   className="px-3 sm:px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 font-medium text-sm sm:text-base transition-all"
                 >
-                  Reset
+                  {t('reset')}
                 </button>
               </div>
               <div className="flex gap-4 mt-3">
@@ -694,10 +834,10 @@ export default function AdminPage() {
                   className="px-4 py-2 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-forest-green text-sm sm:text-base"
                 >
                   <option value="">{t('condition')}</option>
-                  <option value="Bună">Bună</option>
-                  <option value="Foarte bună">Foarte bună</option>
-                  <option value="Nouă">Nouă</option>
-                  <option value="De renovat">De renovat</option>
+                  <option value="Bună">{t('conditionGood')}</option>
+                  <option value="Foarte bună">{t('conditionVeryGood')}</option>
+                  <option value="Nouă">{t('conditionNew')}</option>
+                  <option value="De renovat">{t('conditionRenovation')}</option>
                 </select>
                 <input
                   type="text"
@@ -721,7 +861,41 @@ export default function AdminPage() {
                 className="px-4 py-2 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-forest-green w-full mb-6 text-sm sm:text-base"
                 rows={3}
               />
-              <div className="flex gap-2 mb-4">
+
+              {/* Image Gallery */}
+              <div className="mb-6 md:col-span-2">
+                <label className="block text-sm font-medium text-charcoal mb-2">🖼️ {t('uploadImages')} ({editUploadingImages.length})</label>
+                <label className="w-full px-4 py-3 border-2 border-dashed border-forest-green rounded-lg text-sm cursor-pointer text-text-muted hover:text-forest-green hover:bg-light-gray transition-all flex items-center justify-center min-h-12 mb-3">
+                  <input
+                    type="file"
+                    multiple
+                    accept="image/*"
+                    onChange={(e) => handleImageUpload(e, true)}
+                    className="hidden"
+                  />
+                  <span>📁 {t('uploadImages')}</span>
+                </label>
+                <div className="grid grid-cols-3 md:grid-cols-4 gap-2">
+                  {editUploadingImages.map((item, idx) => (
+                    <div key={idx} className="relative group">
+                      <img
+                        src={typeof item === 'string' ? item : URL.createObjectURL(item)}
+                        alt={`Preview ${idx}`}
+                        className="w-full h-24 object-cover rounded border border-light-gray"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removeImage(idx, true)}
+                        className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex gap-2 mb-4 md:col-span-2">
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input
                     type="checkbox"
@@ -732,24 +906,24 @@ export default function AdminPage() {
                   <span className="text-sm font-medium">{t('markAsSold')}</span>
                 </label>
               </div>
-              <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
+              <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 md:col-span-2">
                 <button
                   onClick={handleEditSave}
-                  className="flex-1 px-4 sm:px-6 py-2 sm:py-3 bg-forest-green text-white rounded-lg hover:bg-forest-green-light active:scale-95 font-medium transition-all text-sm sm:text-base"
+                  className="flex-1 px-4 sm:px-6 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 active:scale-95 font-bold transition-all text-sm sm:text-base"
                 >
                   ✓ {t('save')}
                 </button>
                 <button
                   onClick={() => handleDelete(editingId)}
-                  className="flex-1 px-4 sm:px-6 py-2 sm:py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 active:scale-95 font-medium transition-all text-sm sm:text-base"
+                  className="flex-1 px-4 sm:px-6 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 active:scale-95 font-bold transition-all text-sm sm:text-base"
                 >
-                  🗑️ {t('delete')}
+                  {t('delete')}
                 </button>
                 <button
                   onClick={handleEditCancel}
-                  className="flex-1 px-4 sm:px-6 py-2 sm:py-3 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 active:scale-95 font-medium transition-all text-sm sm:text-base"
+                  className="flex-1 px-4 sm:px-6 py-3 bg-gray-400 text-white rounded-lg hover:bg-gray-500 active:scale-95 font-bold transition-all text-sm sm:text-base"
                 >
-                  ✕ {t('cancel')}
+                  {t('cancel')}
                 </button>
               </div>
             </div>
@@ -838,10 +1012,10 @@ export default function AdminPage() {
                 className="px-4 py-2 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-forest-green text-sm sm:text-base"
               >
                 <option value="">{t('condition')}</option>
-                <option value="Bună">Bună</option>
-                <option value="Foarte bună">Foarte bună</option>
-                <option value="Nouă">Nouă</option>
-                <option value="De renovat">De renovat</option>
+                <option value="Bună">{t('conditionGood')}</option>
+                <option value="Foarte bună">{t('conditionVeryGood')}</option>
+                <option value="Nouă">{t('conditionNew')}</option>
+                <option value="De renovat">{t('conditionRenovation')}</option>
               </select>
               <input
                 type="text"
@@ -864,11 +1038,45 @@ export default function AdminPage() {
                 onChange={(e) => setFormData({ ...formData, video_url: e.target.value })}
                 className="px-4 py-2 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-forest-green md:col-span-2 text-sm sm:text-base"
               />
+
+              {/* Image Upload */}
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-charcoal mb-2">🖼️ {t('uploadImages')}</label>
+                <label className="w-full px-4 py-3 border-2 border-dashed border-forest-green rounded-lg text-sm cursor-pointer text-text-muted hover:text-forest-green hover:bg-light-gray transition-all flex items-center justify-center min-h-12">
+                  <input
+                    type="file"
+                    multiple
+                    accept="image/*"
+                    onChange={(e) => handleImageUpload(e)}
+                    className="hidden"
+                  />
+                  <span>📁 {uploadingImages.length > 0 ? `${uploadingImages.length} imagini` : t('uploadImages')}</span>
+                </label>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mt-3">
+                  {uploadingImages.map((file, idx) => (
+                    <div key={idx} className="relative group">
+                      <img
+                        src={URL.createObjectURL(file)}
+                        alt={`Preview ${idx}`}
+                        className="w-full h-24 object-cover rounded border border-light-gray"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removeImage(idx)}
+                        className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
               <button
                 type="submit"
                 className="md:col-span-2 px-4 sm:px-6 py-2 sm:py-3 bg-forest-green text-white rounded-lg hover:bg-forest-green-light active:scale-95 font-medium transition-all text-sm sm:text-base"
               >
-                ✓ {t('addProperty')}
+                {t('save')}
               </button>
             </form>
           </div>
@@ -877,13 +1085,13 @@ export default function AdminPage() {
         <div className="grid gap-4">
             {filteredProperties.length === 0 ? (
               <div className="bg-white rounded-lg shadow p-6 text-center">
-                <p className="text-text-muted">{t('noLeads')}</p>
+                <p className="text-text-muted">Nu au fost găsite proprietăți cu aceste criterii</p>
               </div>
             ) : (
               filteredProperties.map((property, index) => (
                 <div
                   key={property.id}
-                  className={`bg-white rounded-lg shadow hover:shadow-lg transition-all transform hover:scale-102 p-4 sm:p-6 border-l-4 ${
+                  className={`bg-white rounded-lg shadow hover:shadow-lg transition-all transform hover:scale-105 p-4 sm:p-6 border-l-4 ${
                     property.sold
                       ? 'border-gray-400 opacity-60'
                       : 'border-forest-green'
@@ -908,7 +1116,8 @@ export default function AdminPage() {
                             <span>💶 {property.price} EUR</span>
                             <span>📏 {property.area}m²</span>
                             {property.rooms && <span>🚪 {property.rooms} {t('rooms')}</span>}
-                            {property.video_url && <span>🎥 Video</span>}
+                            {property.video_url && <span>🎥 {t('video')}</span>}
+                            <span className="text-forest-green font-medium">👁️ {property.view_count || 0} {t('views')}</span>
                             {property.sold && (
                               <span className="text-gray-500 font-medium">✓ {t('sold')}</span>
                             )}

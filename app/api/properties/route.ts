@@ -79,6 +79,7 @@ export async function POST(req: Request) {
         contact_phone: body.contact_phone,
         sold: body.sold || false,
         video_url: body.video_url,
+        view_count: 0,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       });

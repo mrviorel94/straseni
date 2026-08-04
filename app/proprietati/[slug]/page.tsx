@@ -20,6 +20,10 @@ export default function PropertyDetailPage() {
         const found = data.find((p: Property) => p.slug === slug);
         setProperty(found || null);
         setLoading(false);
+
+        if (found) {
+          fetch(`/api/properties/${found.id}/view`, { method: 'POST' }).catch(console.error);
+        }
       })
       .catch(() => setLoading(false));
   }, [slug]);

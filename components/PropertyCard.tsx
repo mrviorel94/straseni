@@ -59,17 +59,17 @@ export default function PropertyCard({ property }: PropertyCardProps) {
         </div>
 
         {/* Content */}
-        <div className="p-4 sm:p-5 flex flex-col flex-grow">
+        <div className="p-4 sm:p-5 flex flex-col flex-grow min-h-0">
           {/* Type and Price */}
-          <div className="flex justify-between items-start mb-3">
-            <span className={`text-xs font-medium px-2 py-1 rounded ${
+          <div className="flex justify-between items-start mb-2">
+            <span className={`text-xs font-medium px-2 py-1 rounded flex-shrink-0 ${
               property.sold
                 ? 'bg-gray-200 text-gray-600'
                 : 'text-forest-green bg-light-gray'
             }`}>
               {typeLabels[property.type]}
             </span>
-            <span className={`text-lg font-bold ${
+            <span className={`text-lg font-bold ml-2 flex-shrink-0 ${
               property.sold ? 'text-gray-500' : 'text-forest-green'
             }`}>
               {property.priceLabel || `${property.price.toLocaleString()} EUR`}
@@ -77,7 +77,7 @@ export default function PropertyCard({ property }: PropertyCardProps) {
           </div>
 
           {/* Title */}
-          <h3 className={`font-bold mb-4 line-clamp-2 transition-colors ${
+          <h3 className={`font-bold text-base leading-snug mb-3 line-clamp-2 transition-colors ${
             property.sold
               ? 'text-gray-500'
               : 'text-charcoal group-hover:text-forest-green'

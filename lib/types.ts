@@ -29,6 +29,7 @@ export interface Property {
   slug?: string;
   sold?: boolean;
   video_url?: string | null;
+  view_count?: number;
 }
 
 export interface Utility {

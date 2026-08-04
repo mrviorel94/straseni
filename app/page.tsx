@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense, useState } from 'react';
+import { Suspense, useState, useEffect } from 'react';
 import Link from 'next/link';
 import SearchBar from '@/components/SearchBar';
 import PropertyCard from '@/components/PropertyCard';
@@ -9,12 +9,32 @@ import ArticleCard from '@/components/ArticleCard';
 import ServiceCard from '@/components/ServiceCard';
 import ValuationForm from '@/components/ValuationForm';
 import ScrollReveal from '@/components/ScrollReveal';
-import { mockProperties, mockLocalities, mockArticles, mockServices } from '@/lib/mockData';
+import { mockLocalities, mockArticles, mockServices } from '@/lib/mockData';
+import { Property } from '@/lib/types';
 
 export default function Home() {
   const [newsletterEmail, setNewsletterEmail] = useState('');
   const [newsletterStatus, setNewsletterStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [newsletterMessage, setNewsletterMessage] = useState('');
+  const [properties, setProperties] = useState<Property[]>([]);
+  const [loadingProperties, setLoadingProperties] = useState(true);
+
+  useEffect(() => {
+    const fetchProperties = async () => {
+      try {
+        const response = await fetch('/api/properties');
+        if (!response.ok) throw new Error('Failed to fetch');
+        const data = await response.json();
+        setProperties(Array.isArray(data) ? data : []);
+      } catch (err) {
+        console.error('Error fetching properties:', err);
+        setProperties([]);
+      } finally {
+        setLoadingProperties(false);
+      }
+    };
+    fetchProperties();
+  }, []);
 
   const handleNewsletterSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -52,7 +72,7 @@ export default function Home() {
     }
   };
 
-  const featuredProperties = mockProperties.filter((p) => p.featured).slice(0, 6);
+  const featuredProperties = properties.filter((p) => p.featured).slice(0, 6);
   const recentArticles = mockArticles.slice(0, 3);
 
   return (
@@ -114,13 +134,23 @@ export default function Home() {
           </div>
         </ScrollReveal>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-          {featuredProperties.map((property, index) => (
-            <div key={property.id} className="animate-fade-in" style={{ animationDelay: `${index * 100}ms` }}>
-              <PropertyCard property={property} />
+        {loadingProperties ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+            {[...Array(6)].map((_, i) => (
+              <div key={i} className="h-64 bg-light-gray rounded-lg animate-pulse" />
+            ))}
+          </div>
+        ) : (
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+              {featuredProperties.map((property, index) => (
+                <div key={property.id} className="animate-fade-in" style={{ animationDelay: `${index * 100}ms` }}>
+                  <PropertyCard property={property} />
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
+          </>
+        )}
 
         <div className="text-center">
           <Link
