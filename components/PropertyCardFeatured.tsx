@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { Property } from '@/lib/types';
+import SoldStamp from './SoldStamp';
 
 interface PropertyCardFeaturedProps {
   property: Property;
@@ -17,14 +18,19 @@ export default function PropertyCardFeatured({ property }: PropertyCardFeaturedP
 
   return (
     <Link href={`/proprietati/${slug}`}>
-      <div className="group grid grid-cols-1 md:grid-cols-3 gap-0 overflow-hidden rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 bg-white">
+      <div className={`group grid grid-cols-1 md:grid-cols-3 gap-0 overflow-hidden rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 bg-white ${
+        property.sold ? 'opacity-60 grayscale' : ''
+      }`}>
         {/* Image - spans 2 columns on desktop */}
         <div className="md:col-span-2 relative h-64 md:h-96 overflow-hidden bg-light-gray">
           <img
             src={property.image}
             alt={property.title}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+            className={`w-full h-full object-cover transition-transform duration-500 ${
+              property.sold ? '' : 'group-hover:scale-105'
+            }`}
           />
+          {property.sold && <SoldStamp />}
           {/* Location label with coordinate style */}
           <div className="absolute bottom-4 left-4 bg-white/95 backdrop-blur-sm text-charcoal px-3 py-2 rounded-sm text-sm font-medium flex items-center gap-2">
             <span className="text-soft-stone text-xl">📍</span>
@@ -33,11 +39,11 @@ export default function PropertyCardFeatured({ property }: PropertyCardFeaturedP
         </div>
 
         {/* Content - 1 column on desktop */}
-        <div className="p-6 md:p-8 flex flex-col justify-between bg-warm-ivory">
+        <div className="p-6 md:p-8 flex flex-col justify-between bg-beige-light">
           {/* Badge */}
-          {property.badge && (
+          {property.badge && !property.sold && (
             <div className="inline-block w-fit mb-4">
-              <span className="text-xs font-bold uppercase tracking-wide text-soft-stone">
+              <span className="text-xs font-bold uppercase tracking-wide text-forest-green">
                 {property.badge}
               </span>
             </div>
@@ -51,7 +57,7 @@ export default function PropertyCardFeatured({ property }: PropertyCardFeaturedP
           </div>
 
           {/* Title */}
-          <h3 className="text-2xl md:text-3xl font-serif font-bold text-charcoal mb-4 leading-tight group-hover:text-forest-green transition-colors">
+          <h3 className="text-2xl md:text-3xl font-bold text-charcoal mb-4 leading-tight group-hover:text-forest-green transition-colors">
             {property.title}
           </h3>
 

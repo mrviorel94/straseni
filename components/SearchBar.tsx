@@ -25,7 +25,7 @@ export default function SearchBar() {
   };
 
   return (
-    <form onSubmit={handleSearch} className="bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300">
+    <form onSubmit={handleSearch} className="bg-white p-6 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 max-w-6xl mx-auto -mb-20 relative z-10 border border-light-gray">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Property Type */}
         <div className="group">
@@ -97,7 +97,7 @@ export default function SearchBar() {
         <div className="sm:col-span-2 lg:col-span-1 flex items-end">
           <button
             type="submit"
-            className="w-full bg-forest-green text-white px-6 py-2 rounded-lg hover:bg-forest-green-light active:scale-95 transition-all duration-300 font-bold text-base shadow-md hover:shadow-lg transform hover:scale-105"
+            className="w-full bg-forest-green text-white px-6 py-2 rounded-lg hover:bg-forest-green-light active:scale-95 transition-all duration-300 font-bold text-base shadow-md hover:shadow-lg transform hover:scale-105 btn-interactive"
           >
             🔍 Caută
           </button>

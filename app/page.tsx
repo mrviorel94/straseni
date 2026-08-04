@@ -78,7 +78,7 @@ export default function Home() {
   return (
     <>
       {/* Hero Section */}
-      <section className="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-warm-white to-light-gray overflow-hidden">
+      <section className="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-warm-white to-light-gray overflow-visible pb-32">
         <div className="absolute inset-0 z-0">
           <img
             src="https://images.unsplash.com/photo-1570129477492-45c003d96918?w=1200&h=800&fit=crop"
@@ -87,7 +87,7 @@ export default function Home() {
           />
         </div>
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 py-20 text-center">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 py-20 text-center w-full">
           <div className="mb-8 animate-slide-up">
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-charcoal mb-4 leading-tight">
               Imobiliare în Strășeni,<br />
@@ -101,13 +101,13 @@ export default function Home() {
           <div className="flex flex-col sm:flex-row justify-center gap-4 mb-12 animate-slide-up" style={{ animationDelay: '0.2s' }}>
             <Link
               href="/proprietati"
-              className="inline-block bg-forest-green text-white px-8 py-3 rounded-lg hover:bg-forest-green-light transition-all transform hover:scale-105 font-medium"
+              className="inline-block bg-forest-green text-white px-8 py-3 rounded-lg hover:bg-forest-green-light transition-all transform hover:scale-105 font-medium btn-interactive"
             >
               Vezi proprietățile
             </Link>
             <Link
               href="/adauga-proprietate"
-              className="inline-block bg-white text-forest-green px-8 py-3 rounded-lg border-2 border-forest-green hover:bg-light-gray transition-all transform hover:scale-105 font-medium"
+              className="inline-block bg-white text-forest-green px-8 py-3 rounded-lg border-2 border-forest-green hover:bg-light-gray transition-all transform hover:scale-105 font-medium btn-interactive"
             >
               Vreau să vând
             </Link>
@@ -122,8 +122,8 @@ export default function Home() {
       </section>
 
       {/* Featured Properties */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-        <ScrollReveal>
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 pt-32">
+        <ScrollReveal direction="up">
           <div className="text-center mb-12 animate-slide-up">
             <h2 className="text-3xl sm:text-4xl font-bold text-charcoal mb-4">
               Proprietăți promovate
@@ -165,7 +165,7 @@ export default function Home() {
       {/* Localities Section */}
       <section className="bg-light-gray py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <ScrollReveal>
+          <ScrollReveal direction="left">
             <div className="text-center mb-12 animate-slide-up">
               <h2 className="text-3xl sm:text-4xl font-bold text-charcoal mb-4">
                 Localități din raionul Strășeni
@@ -197,7 +197,7 @@ export default function Home() {
 
       {/* Services Section */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-        <ScrollReveal>
+        <ScrollReveal direction="right">
           <div className="text-center mb-12 animate-slide-up">
             <h2 className="text-3xl sm:text-4xl font-bold text-charcoal mb-4">
               Cum te pot ajuta
@@ -223,7 +223,7 @@ export default function Home() {
           <h2 className="text-3xl sm:text-4xl font-bold mb-4">
             Cât valorează proprietatea ta?
           </h2>
-          <p className="text-lg text-green-100 mb-8">
+          <p className="text-lg text-beige-light mb-8">
             Trimite-ne câteva informații și primești o evaluare orientativă pentru piața din Strășeni.
           </p>
         </div>
@@ -235,7 +235,7 @@ export default function Home() {
 
       {/* Blog Section */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-        <ScrollReveal>
+        <ScrollReveal direction="scale">
           <div className="text-center mb-12 animate-slide-up">
             <h2 className="text-3xl sm:text-4xl font-bold text-charcoal mb-4">
               Articole recente
@@ -311,7 +311,7 @@ export default function Home() {
 
       {/* Newsletter */}
       <section className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-        <ScrollReveal>
+        <ScrollReveal direction="up">
           <div className="bg-white border-2 border-light-gray rounded-lg p-8 text-center animate-slide-up hover:border-forest-green transition-colors duration-300">
           <h2 className="text-2xl sm:text-3xl font-bold text-charcoal mb-4">
             Primește noutăți despre piața imobiliară
@@ -347,13 +347,13 @@ export default function Home() {
           </form>
 
           {newsletterStatus === 'success' && (
-            <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg text-green-700 text-sm animate-pop-in">
+            <div className="mt-4 p-3 bg-green-50 border border-green-500 rounded-lg text-green-700 text-sm animate-pop-in">
               ✓ {newsletterMessage}
             </div>
           )}
 
           {newsletterStatus === 'error' && (
-            <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm animate-pop-in">
+            <div className="mt-4 p-3 bg-red-50 border border-red-500 rounded-lg text-red-700 text-sm animate-pop-in">
               ⚠️ {newsletterMessage}
             </div>
           )}

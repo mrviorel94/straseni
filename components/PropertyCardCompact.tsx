@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { Property } from '@/lib/types';
+import SoldStamp from './SoldStamp';
 
 interface PropertyCardCompactProps {
   property: Property;
@@ -17,15 +18,20 @@ export default function PropertyCardCompact({ property }: PropertyCardCompactPro
 
   return (
     <Link href={`/proprietati/${slug}`}>
-      <div className="group bg-white rounded-md overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 flex flex-col h-full border border-light-gray hover:border-soft-stone">
+      <div className={`group bg-white rounded-md overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 flex flex-col h-full border border-light-gray hover:border-forest-green-light ${
+        property.sold ? 'opacity-60 grayscale' : ''
+      }`}>
         {/* Image */}
         <div className="relative h-40 overflow-hidden bg-light-gray">
           <img
             src={property.image}
             alt={property.title}
-            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+            className={`w-full h-full object-cover transition-transform duration-500 ${
+              property.sold ? '' : 'group-hover:scale-110'
+            }`}
           />
-          {property.badge && (
+          {property.sold && <SoldStamp />}
+          {property.badge && !property.sold && (
             <div className="absolute top-2 right-2">
               <span className="text-xs font-bold uppercase bg-forest-green text-white px-2 py-1 rounded-sm">
                 {property.badge}
